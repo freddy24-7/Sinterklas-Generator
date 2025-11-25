@@ -41,10 +41,10 @@ export default function ControlPanel({
   };
 
   return (
-    <Card className="p-5 sm:p-6 bg-card border shadow-sm sticky top-6">
-      <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-6">Instellingen</h2>
+    <Card className="p-4 sm:p-5 lg:p-6 bg-card border shadow-sm lg:sticky lg:top-6">
+      <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-foreground mb-4 sm:mb-6">Instellingen</h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Recipient Name */}
         <div className="space-y-2">
           <label htmlFor="recipient-name" className="text-sm font-medium text-foreground">

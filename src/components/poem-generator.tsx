@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ControlPanel from './control-panel';
+import jsPDF from 'jspdf';
 
 export default function PoemGenerator() {
   const [numLines, setNumLines] = useState(8);
@@ -14,6 +15,57 @@ export default function PoemGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPoem, setGeneratedPoem] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const handleDownloadPDF = () => {
+    if (!generatedPoem) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const maxWidth = pageWidth - 2 * margin;
+
+    // Set font
+    doc.setFont('helvetica');
+    doc.setFontSize(12);
+
+    // Split poem into lines
+    const lines = generatedPoem.split('\n');
+    let y = margin + 10;
+    const lineHeight = 7;
+
+    lines.forEach((line) => {
+      // Check if we need a new page
+      if (y + lineHeight > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+
+      // Handle empty lines
+      if (line.trim() === '') {
+        y += lineHeight / 2;
+        return;
+      }
+
+      // Split long lines if needed
+      const splitLines = doc.splitTextToSize(line, maxWidth);
+      splitLines.forEach((splitLine: string) => {
+        if (y + lineHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(splitLine, margin, y);
+        y += lineHeight;
+      });
+    });
+
+    // Generate filename with recipient name if available
+    const filename = recipientName
+      ? `Sinterklaas_Gedicht_${recipientName.replace(/\s+/g, '_')}.pdf`
+      : 'Sinterklaas_Gedicht.pdf';
+
+    doc.save(filename);
+  };
 
   const handleGeneratePoem = async () => {
     // Prevent multiple simultaneous requests (429 protection)
@@ -72,8 +124,8 @@ export default function PoemGenerator() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto w-full overflow-x-hidden">
-      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+    <div className="max-w-6xl mx-auto w-full overflow-x-hidden px-2 sm:px-0">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {/* Control Panel - Takes 1 column on large screens */}
         <div className="lg:col-span-1">
           <ControlPanel
@@ -94,53 +146,57 @@ export default function PoemGenerator() {
 
         {/* Generated Poem Display - Takes 2 columns on large screens */}
         <div className="lg:col-span-2">
-          <Card className="p-6 sm:p-8 min-h-[500px] sm:min-h-[600px] bg-card border shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Je Gedicht</h2>
-              {generatedPoem && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedPoem);
-                      // Optional: Show a toast notification
-                    }}
-                    className="text-xs sm:text-sm"
-                  >
-                    📋 Kopiëren
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setGeneratedPoem('');
-                      setError(null);
-                    }}
-                    className="text-xs sm:text-sm"
-                  >
-                    🔄 Wissen
-                  </Button>
-                </div>
-              )}
-            </div>
+          <Card className="p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-card border shadow-sm">
+            {generatedPoem && (
+              <div className="flex flex-wrap gap-2 mb-6 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedPoem);
+                  }}
+                  className="text-xs sm:text-sm flex-shrink-0"
+                >
+                  📋 Kopiëren
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  className="text-xs sm:text-sm flex-shrink-0"
+                >
+                  📄 PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setGeneratedPoem('');
+                    setError(null);
+                  }}
+                  className="text-xs sm:text-sm flex-shrink-0"
+                >
+                  🔄 Wissen
+                </Button>
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive font-medium">{error}</p>
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-xs sm:text-sm text-destructive font-medium break-words">{error}</p>
               </div>
             )}
 
             {/* Loading State */}
             {isLoading && (
-              <div className="flex items-center justify-center h-full min-h-[400px] text-center">
+              <div className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4">
                 <div className="space-y-4">
-                  <div className="text-4xl animate-pulse">⏳</div>
-                  <p className="text-lg sm:text-xl text-foreground/80 font-medium">
+                  <div className="text-3xl sm:text-4xl animate-pulse">⏳</div>
+                  <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
                     Gedicht wordt gegenereerd...
                   </p>
-                  <p className="text-sm sm:text-base text-foreground/50">
+                  <p className="text-xs sm:text-sm text-foreground/50">
                     Dit kan even duren
                   </p>
                 </div>
@@ -149,9 +205,9 @@ export default function PoemGenerator() {
 
             {/* Generated Poem */}
             {!isLoading && generatedPoem && (
-              <div className="space-y-6">
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-foreground whitespace-pre-line leading-relaxed font-serif text-base sm:text-lg lg:text-xl">
+              <div className="space-y-4">
+                <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
+                  <p className="text-foreground whitespace-pre-line leading-relaxed font-serif text-sm sm:text-base lg:text-lg xl:text-xl break-words">
                     {generatedPoem}
                   </p>
                 </div>
@@ -160,13 +216,13 @@ export default function PoemGenerator() {
 
             {/* Empty State */}
             {!isLoading && !generatedPoem && !error && (
-              <div className="flex items-center justify-center h-full min-h-[400px] text-center">
+              <div className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4">
                 <div className="space-y-3 max-w-sm">
-                  <div className="text-4xl mb-4">✨</div>
-                  <p className="text-lg sm:text-xl text-foreground/80 font-medium">
+                  <div className="text-3xl sm:text-4xl mb-4">✨</div>
+                  <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
                     Nog niets gegenereerd
                   </p>
-                  <p className="text-sm sm:text-base text-foreground/50">
+                  <p className="text-xs sm:text-sm text-foreground/50">
                     Vul de naam van de ontvanger in en klik op "Genereer Gedicht" om te beginnen
                   </p>
                 </div>

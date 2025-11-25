@@ -83,10 +83,22 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     const poem = await getGeminiResponse(prompt, 'nl');
 
     // Clean up the poem (remove any markdown formatting if present)
-    const cleanedPoem = poem
+    let cleanedPoem = poem
       .replace(/```[\s\S]*?```/g, '') // Remove code blocks
       .replace(/^#+\s*/gm, '') // Remove markdown headers
       .trim();
+
+    // Add required header and footer
+    const header = 'Madrid, 5 december\n\n';
+    const footer = '\n\nSint en Piet';
+
+    // Ensure the poem doesn't already start/end with these
+    if (!cleanedPoem.startsWith('Madrid')) {
+      cleanedPoem = header + cleanedPoem;
+    }
+    if (!cleanedPoem.endsWith('Sint en Piet')) {
+      cleanedPoem = cleanedPoem + footer;
+    }
 
     return NextResponse.json({ poem: cleanedPoem });
   } catch (error) {
