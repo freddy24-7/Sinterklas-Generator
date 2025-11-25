@@ -13,24 +13,53 @@ export default function PoemGenerator() {
   const [recipientFacts, setRecipientFacts] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPoem, setGeneratedPoem] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleGeneratePoem = async () => {
+    // Validate recipient name
+    if (!recipientName || recipientName.trim() === '') {
+      setError('Vul alsjeblieft de naam van de ontvanger in');
+      return;
+    }
+
     setIsLoading(true);
-    // Placeholder for actual poem generation logic
-    setTimeout(() => {
-      const styles = isClassic ? 'klassieke' : 'vrije';
-      const tone = friendliness > 70 ? 'vriendelijk' : friendliness > 40 ? 'neutraal' : 'scherp';
-      const nameText = recipientName ? ` voor ${recipientName}` : '';
-      const factsText = recipientFacts ? `\n\nFeiten: ${recipientFacts}` : '';
-      setGeneratedPoem(
-        `Een ${styles} ${tone} Sinterklaas gedicht${nameText} met ${numLines} regels:\n\n` +
-          `Dit is een gegenereerd gedicht dat ${numLines} regels bevat.\n` +
-          `De toon is ${tone} en de stijl is ${styles}.\n` +
-          `Met vriendelijkheid niveau: ${friendliness}/100.${factsText}\n\n` +
-          'Hier zouden je gegenereerde regels verschijnen...',
-      );
+    setError(null);
+    setGeneratedPoem('');
+
+    try {
+      const response = await fetch('/api/generate-poem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientName: recipientName.trim(),
+          recipientFacts: recipientFacts.trim(),
+          numLines,
+          isClassic,
+          friendliness,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Er is een fout opgetreden');
+      }
+
+      if (data.poem) {
+        setGeneratedPoem(data.poem);
+      } else {
+        throw new Error('Geen gedicht ontvangen van de server');
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Er is een onbekende fout opgetreden';
+      setError(errorMessage);
+      console.error('Error generating poem:', err);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -64,7 +93,10 @@ export default function PoemGenerator() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigator.clipboard.writeText(generatedPoem)}
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedPoem);
+                      // Optional: Show a toast notification
+                    }}
                     className="text-xs sm:text-sm"
                   >
                     📋 Kopiëren
@@ -72,7 +104,10 @@ export default function PoemGenerator() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setGeneratedPoem('')}
+                    onClick={() => {
+                      setGeneratedPoem('');
+                      setError(null);
+                    }}
                     className="text-xs sm:text-sm"
                   >
                     🔄 Wissen
@@ -80,7 +115,31 @@ export default function PoemGenerator() {
                 </div>
               )}
             </div>
-            {generatedPoem ? (
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive font-medium">{error}</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex items-center justify-center h-full min-h-[400px] text-center">
+                <div className="space-y-4">
+                  <div className="text-4xl animate-pulse">⏳</div>
+                  <p className="text-lg sm:text-xl text-foreground/80 font-medium">
+                    Gedicht wordt gegenereerd...
+                  </p>
+                  <p className="text-sm sm:text-base text-foreground/50">
+                    Dit kan even duren
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Generated Poem */}
+            {!isLoading && generatedPoem && (
               <div className="space-y-6">
                 <div className="prose prose-lg max-w-none">
                   <p className="text-foreground whitespace-pre-line leading-relaxed font-serif text-base sm:text-lg lg:text-xl">
@@ -88,7 +147,10 @@ export default function PoemGenerator() {
                   </p>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Empty State */}
+            {!isLoading && !generatedPoem && !error && (
               <div className="flex items-center justify-center h-full min-h-[400px] text-center">
                 <div className="space-y-3 max-w-sm">
                   <div className="text-4xl mb-4">✨</div>
@@ -96,7 +158,7 @@ export default function PoemGenerator() {
                     Nog niets gegenereerd
                   </p>
                   <p className="text-sm sm:text-base text-foreground/50">
-                    Pas je instellingen aan en klik op "Genereer Gedicht" om te beginnen
+                    Vul de naam van de ontvanger in en klik op "Genereer Gedicht" om te beginnen
                   </p>
                 </div>
               </div>
