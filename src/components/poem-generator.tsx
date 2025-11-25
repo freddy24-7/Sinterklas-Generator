@@ -16,6 +16,11 @@ export default function PoemGenerator() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGeneratePoem = async () => {
+    // Prevent multiple simultaneous requests (429 protection)
+    if (isLoading) {
+      return;
+    }
+
     // Validate recipient name
     if (!recipientName || recipientName.trim() === '') {
       setError('Vul alsjeblieft de naam van de ontvanger in');
@@ -44,6 +49,10 @@ export default function PoemGenerator() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle 429 rate limit errors specifically
+        if (response.status === 429) {
+          throw new Error('Te veel verzoeken. Wacht even en probeer het opnieuw.');
+        }
         throw new Error(data.error || 'Er is een fout opgetreden');
       }
 
@@ -63,7 +72,7 @@ export default function PoemGenerator() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto w-full overflow-x-hidden">
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Control Panel - Takes 1 column on large screens */}
         <div className="lg:col-span-1">

@@ -156,7 +156,8 @@ export default function ControlPanel({
         <Button
           onClick={onGeneratePoem}
           disabled={isLoading}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 sm:py-4 text-base rounded-lg transition-all disabled:opacity-50 shadow-sm"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 sm:py-4 text-base rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          aria-disabled={isLoading}
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
