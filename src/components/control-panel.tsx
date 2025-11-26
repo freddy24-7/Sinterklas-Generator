@@ -15,6 +15,12 @@ interface ControlPanelProps {
   onRecipientNameChange: (value: string) => void;
   recipientFacts: string;
   onRecipientFactsChange: (value: string) => void;
+  isHumanize: boolean;
+  onHumanizeToggle: (value: boolean) => void;
+  authorAge: string;
+  onAuthorAgeChange: (value: string) => void;
+  authorGender: string;
+  onAuthorGenderChange: (value: string) => void;
   isLoading: boolean;
   onGeneratePoem: () => void;
 }
@@ -30,6 +36,12 @@ export default function ControlPanel({
   onRecipientNameChange,
   recipientFacts,
   onRecipientFactsChange,
+  isHumanize,
+  onHumanizeToggle,
+  authorAge,
+  onAuthorAgeChange,
+  authorGender,
+  onAuthorGenderChange,
   isLoading,
   onGeneratePoem,
 }: ControlPanelProps) {
@@ -42,7 +54,9 @@ export default function ControlPanel({
 
   return (
     <Card className="p-4 sm:p-5 lg:p-6 bg-card border shadow-sm lg:sticky lg:top-6">
-      <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-foreground mb-4 sm:mb-6">Instellingen</h2>
+      <h2 className="text-base sm:text-lg lg:text-xl font-bold text-primary mb-4 sm:mb-6">
+        ✨ Start hier
+      </h2>
 
       <div className="space-y-4 sm:space-y-6">
         {/* Recipient Name */}
@@ -106,6 +120,7 @@ export default function ControlPanel({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => onStyleToggle(true)}
+              title="Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)"
               className={`p-3 rounded-lg border-2 font-medium text-sm transition-all ${
                 isClassic
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -116,6 +131,7 @@ export default function ControlPanel({
             </button>
             <button
               onClick={() => onStyleToggle(false)}
+              title="Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
               className={`p-3 rounded-lg border-2 font-medium text-sm transition-all ${
                 !isClassic
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
@@ -125,6 +141,100 @@ export default function ControlPanel({
               Vrij Stromend
             </button>
           </div>
+        </div>
+
+        {/* AI Mode Selection */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-foreground block">AI Modus</label>
+          <div className="space-y-2.5">
+            <label
+              title="Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+              className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <input
+                type="radio"
+                name="ai-mode"
+                checked={!isHumanize}
+                onChange={() => onHumanizeToggle(false)}
+                className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
+              />
+              <span className="text-sm text-foreground font-medium">Fully AI</span>
+            </label>
+            <label
+              title="Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+              className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <input
+                type="radio"
+                name="ai-mode"
+                checked={isHumanize}
+                onChange={() => onHumanizeToggle(true)}
+                className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
+              />
+              <span className="text-sm text-foreground font-medium">Humanize</span>
+            </label>
+          </div>
+
+          {/* Humanize Options */}
+          {isHumanize && (
+            <div className="space-y-3 pl-6 pt-2 border-l-2 border-primary/20">
+              <div className="space-y-2">
+                <label htmlFor="author-age" className="text-xs sm:text-sm font-medium text-foreground">
+                  Leeftijd schrijver
+                </label>
+                <input
+                  id="author-age"
+                  type="number"
+                  min="5"
+                  max="100"
+                  value={authorAge}
+                  onChange={(e) => {
+                    const newAge = e.target.value;
+                    const currentAge = authorAge ? Number.parseInt(authorAge) : null;
+                    const newAgeNum = newAge ? Number.parseInt(newAge) : null;
+                    
+                    // Clear gender if crossing the 18 threshold
+                    if (
+                      authorGender &&
+                      currentAge !== null &&
+                      newAgeNum !== null &&
+                      ((currentAge < 18 && newAgeNum >= 18) || (currentAge >= 18 && newAgeNum < 18))
+                    ) {
+                      onAuthorGenderChange('');
+                    }
+                    
+                    onAuthorAgeChange(newAge);
+                  }}
+                  placeholder="Bijv. 12"
+                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="author-gender" className="text-xs sm:text-sm font-medium text-foreground">
+                  Geslacht schrijver
+                </label>
+                <select
+                  id="author-gender"
+                  value={authorGender}
+                  onChange={(e) => onAuthorGenderChange(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                >
+                  <option value="">Selecteer...</option>
+                  {authorAge && Number.parseInt(authorAge) >= 18 ? (
+                    <>
+                      <option value="man">Man</option>
+                      <option value="vrouw">Vrouw</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="jongen">Jongen</option>
+                      <option value="meisje">Meisje</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Friendliness Scale */}

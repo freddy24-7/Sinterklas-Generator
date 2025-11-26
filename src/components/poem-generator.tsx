@@ -12,6 +12,9 @@ export default function PoemGenerator() {
   const [friendliness, setFriendliness] = useState(50);
   const [recipientName, setRecipientName] = useState('');
   const [recipientFacts, setRecipientFacts] = useState('');
+  const [isHumanize, setIsHumanize] = useState(false);
+  const [authorAge, setAuthorAge] = useState('');
+  const [authorGender, setAuthorGender] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPoem, setGeneratedPoem] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +145,18 @@ export default function PoemGenerator() {
       return;
     }
 
+    // Validate humanize fields if humanize is enabled
+    if (isHumanize) {
+      if (!authorAge || authorAge.trim() === '') {
+        setError('Vul alsjeblieft de leeftijd van de schrijver in');
+        return;
+      }
+      if (!authorGender || authorGender.trim() === '') {
+        setError('Selecteer alsjeblieft het geslacht van de schrijver');
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError(null);
     setGeneratedPoem('');
@@ -158,6 +173,9 @@ export default function PoemGenerator() {
           numLines,
           isClassic,
           friendliness,
+          isHumanize,
+          authorAge: isHumanize ? authorAge.trim() : '',
+          authorGender: isHumanize ? authorGender.trim() : '',
         }),
       });
 
@@ -202,6 +220,12 @@ export default function PoemGenerator() {
             onRecipientNameChange={setRecipientName}
             recipientFacts={recipientFacts}
             onRecipientFactsChange={setRecipientFacts}
+            isHumanize={isHumanize}
+            onHumanizeToggle={setIsHumanize}
+            authorAge={authorAge}
+            onAuthorAgeChange={setAuthorAge}
+            authorGender={authorGender}
+            onAuthorGenderChange={setAuthorGender}
             isLoading={isLoading}
             onGeneratePoem={handleGeneratePoem}
           />

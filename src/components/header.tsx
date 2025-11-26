@@ -25,8 +25,12 @@ export default function Header() {
 
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs sm:text-sm flex-shrink-0 whitespace-nowrap">
-                📖 Help
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm flex-shrink-0 whitespace-nowrap shadow-sm"
+              >
+                ℹ️ Info
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
@@ -74,7 +78,34 @@ export default function Header() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">5. Vriendelijkheid</h3>
+                  <h3 className="font-semibold text-foreground">5. AI Modus</h3>
+                  <p className="text-sm text-foreground/70 mb-2">
+                    Kies tussen twee modi:
+                  </p>
+                  <div className="space-y-3 pl-0">
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-foreground">Fully AI:</span>
+                        <span className="text-sm text-foreground/70"> Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst.</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-foreground">Humanize:</span>
+                        <span className="text-sm text-foreground/70">
+                          {' '}Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de
+                          schrijver. Vul de leeftijd en het geslacht in om een authentiek handgeschreven gevoel te
+                          krijgen. Perfect voor wanneer een kind het gedicht zou schrijven!
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">6. Vriendelijkheid</h3>
                   <p className="text-sm text-foreground/70">
                     Pas de toon aan van je gedicht:
                   </p>
@@ -92,10 +123,10 @@ export default function Header() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">6. Genereer en download</h3>
+                  <h3 className="font-semibold text-foreground">7. Genereer en download</h3>
                   <p className="text-sm text-foreground/70">
                     Klik op "Genereer Gedicht" om je persoonlijke Sinterklaas gedicht te maken. Je kunt het gedicht
-                    kopiëren of downloaden als PDF.
+                    kopiëren, printen of downloaden als PDF.
                   </p>
                 </div>
 

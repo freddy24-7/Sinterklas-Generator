@@ -58,8 +58,8 @@ export default function SinterklaasHero() {
         <span className="text-primary">Gedichten</span>
       </h1>
       <p className="text-base sm:text-lg lg:text-xl text-foreground/70 max-w-2xl mx-auto leading-relaxed px-4">
-        Genereer persoonlijke en grappige Sinterklaas gedichten voor je vrienden en familie. Kies je stijl, bepaal de
-        vriendelijkheid, en laat AI het werk doen.
+        Genereer persoonlijke en grappige Sinterklaas gedichten voor je vrienden en familie. Kies je stijl en bepaal de
+        vriendelijkheid.
       </p>
     </div>
   );

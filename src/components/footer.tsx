@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="text-center sm:text-left">
             <p className="text-xs sm:text-sm text-foreground/70">
-              Genereer persoonlijke Sinterklaas gedichten met AI
+              Genereer persoonlijke Sinterklaas gedichten
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               © {currentYear} Sinterklaas Gedichten Generator

@@ -10,6 +10,9 @@ export async function POST(request: NextRequest) {
       numLines,
       isClassic,
       friendliness,
+      isHumanize,
+      authorAge,
+      authorGender,
     } = body;
 
     // Validate required fields
@@ -20,6 +23,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate humanize fields if humanize is enabled
+    if (isHumanize) {
+      if (!authorAge || authorAge.trim() === '') {
+        return NextResponse.json(
+          { error: 'Leeftijd schrijver is verplicht bij Humanize modus' },
+          { status: 400 }
+        );
+      }
+      if (!authorGender || authorGender.trim() === '') {
+        return NextResponse.json(
+          { error: 'Geslacht schrijver is verplicht bij Humanize modus' },
+          { status: 400 }
+        );
+      }
+    }
+
     // Determine style and tone
     const style = isClassic ? 'klassiek' : 'vrij stromend';
     const tone =
@@ -28,6 +47,56 @@ export async function POST(request: NextRequest) {
         : friendliness > 40
           ? 'neutraal en gebalanceerd'
           : 'grappig en scherp met een vleugje humor';
+
+    // Build humanize instructions based on age and gender
+    const getHumanizeInstructions = () => {
+      if (!isHumanize || !authorAge || !authorGender) return '';
+
+      const age = Number.parseInt(authorAge);
+      const isYoung = age < 10;
+      const isTeen = age >= 10 && age < 18;
+      const isAdult = age >= 18;
+
+      let twirks = '';
+
+      // Determine gender label based on age and gender value
+      const getGenderLabel = (age: number, gender: string) => {
+        if (age < 10) {
+          return gender === 'jongen' ? 'jongetje' : 'meisje';
+        } else if (age < 18) {
+          return gender === 'jongen' ? 'jongen' : 'meisje';
+        } else {
+          return gender === 'man' ? 'man' : 'vrouw';
+        }
+      };
+
+      const genderLabel = getGenderLabel(age, authorGender);
+
+      if (isYoung) {
+        // Young children (5-9)
+        twirks = `- Voeg 2-3 kleine foutjes toe die typisch zijn voor een ${age}-jarig ${genderLabel}:
+  * Kleine spelfouten (bijvoorbeeld "sint" i.p.v. "Sint", of "piet" i.p.v. "Piet")
+  * Eenvoudige woordkeuze en korte zinnen
+  * Soms een woord dat niet helemaal klopt maar wel logisch is
+  * Mogelijk een kleine grammaticafout die natuurlijk klinkt voor deze leeftijd`;
+      } else if (isTeen) {
+        // Teenagers (10-17)
+        twirks = `- Voeg 2-3 kleine foutjes toe die typisch zijn voor een ${age}-jarige ${genderLabel}:
+  * Soms een woord vergeten of een kleine typo
+  * Mogelijk een informele woordkeuze die tussendoor sluipt
+  * Een kleine inconsistentie in spelling (bijvoorbeeld "Sint" en "sint" door elkaar)
+  * Soms een woord dat bijna goed is maar net niet perfect`;
+      } else {
+        // Adults (18+)
+        twirks = `- Voeg 2-3 subtiele foutjes toe die typisch zijn voor een ${age}-jarige ${genderLabel}:
+  * Een kleine spelfout of typo die snel gemaakt kan worden
+  * Mogelijk een woord dat verkeerd gespeld is maar wel begrijpelijk
+  * Soms een kleine grammatica-inconsistentie
+  * Een subtiele fout die suggereert dat het handgeschreven zou kunnen zijn`;
+      }
+
+      return `\n\nBELANGRIJK - HUMANIZE MODUS:\nHet gedicht wordt geschreven door een ${age}-jarige ${genderLabel} en moet daarom authentiek klinken:\n${twirks}\n- De foutjes moeten subtiel en natuurlijk zijn - niet te opvallend\n- Het gedicht moet nog steeds leesbaar en begrijpelijk zijn`;
+    };
 
     // Build the prompt with different instructions for classic vs free-flowing
     let prompt = '';
@@ -51,7 +120,7 @@ ${
 - Begin met "Lieve ${recipientName}," of "Beste ${recipientName},"
 - Maak het gedicht grappig, persoonlijk en passend bij de Sinterklaas traditie
 - Gebruik geen emoji's in het gedicht zelf
-- Houd je strikt aan de 4-regel groepen structuur
+- Houd je strikt aan de 4-regel groepen structuur${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     } else {
@@ -74,7 +143,7 @@ ${
 - Begin met "Lieve ${recipientName}," of "Beste ${recipientName}," of een andere persoonlijke opening
 - Maak het gedicht grappig, persoonlijk en natuurlijk klinkend
 - Gebruik geen emoji's in het gedicht zelf
-- Laat de structuur natuurlijk en vrij stromen - geen strikte patronen
+- Laat de structuur natuurlijk en vrij stromen - geen strikte patronen${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     }
