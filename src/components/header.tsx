@@ -97,7 +97,7 @@ export default function Header() {
                         <span className="text-sm text-foreground/70">
                           {' '}Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de
                           schrijver. Vul de leeftijd en het geslacht in om een authentiek handgeschreven gevoel te
-                          krijgen. Perfect voor wanneer een kind het gedicht zou schrijven!
+                          krijgen.
                         </span>
                       </div>
                     </div>
