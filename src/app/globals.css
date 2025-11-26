@@ -124,3 +124,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @media print {
+    .print\:hidden {
+      display: none !important;
+    }
+    
+    header,
+    footer,
+    nav,
+    aside,
+    button:not(.print-button) {
+      display: none !important;
+    }
+    
+    body {
+      background: white !important;
+      color: black !important;
+    }
+    
+    .prose p {
+      font-size: 14pt !important;
+      line-height: 1.8 !important;
+      font-family: 'Times New Roman', serif !important;
+    }
+  }
+}

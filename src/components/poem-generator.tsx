@@ -67,6 +67,69 @@ export default function PoemGenerator() {
     doc.save(filename);
   };
 
+  const handlePrint = () => {
+    if (!generatedPoem) return;
+
+    // Create a new window with the poem for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html lang="nl">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Sinterklaas Gedicht${recipientName ? ` - ${recipientName}` : ''}</title>
+          <style>
+            @media print {
+              @page {
+                margin: 2cm;
+              }
+              body {
+                margin: 0;
+                padding: 0;
+              }
+            }
+            body {
+              font-family: 'Times New Roman', serif;
+              font-size: 14pt;
+              line-height: 1.8;
+              max-width: 21cm;
+              margin: 2cm auto;
+              padding: 1cm;
+              color: #000;
+              background: #fff;
+            }
+            .poem {
+              white-space: pre-line;
+              text-align: left;
+            }
+            .poem p {
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="poem">${generatedPoem.replace(/\n/g, '<br>')}</div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        // Optionally close the window after printing
+        // printWindow.close();
+      }, 250);
+    };
+  };
+
   const handleGeneratePoem = async () => {
     // Prevent multiple simultaneous requests (429 protection)
     if (isLoading) {
@@ -148,7 +211,7 @@ export default function PoemGenerator() {
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-card border shadow-sm">
             {generatedPoem && (
-              <div className="flex flex-wrap gap-2 mb-6 justify-end">
+              <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden">
                 <Button
                   variant="outline"
                   size="sm"
@@ -158,6 +221,14 @@ export default function PoemGenerator() {
                   className="text-xs sm:text-sm flex-shrink-0"
                 >
                   📋 Kopiëren
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrint}
+                  className="text-xs sm:text-sm flex-shrink-0"
+                >
+                  🖨️ Print
                 </Button>
                 <Button
                   variant="outline"
