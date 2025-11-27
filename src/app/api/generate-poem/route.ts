@@ -120,6 +120,7 @@ ${
 - Begin met "Lieve ${recipientName}," of "Beste ${recipientName},"
 - Maak het gedicht grappig, persoonlijk en passend bij de Sinterklaas traditie
 - Gebruik geen emoji's in het gedicht zelf
+- Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
 - Houd je strikt aan de 4-regel groepen structuur${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
@@ -143,6 +144,7 @@ ${
 - Begin met "Lieve ${recipientName}," of "Beste ${recipientName}," of een andere persoonlijke opening
 - Maak het gedicht grappig, persoonlijk en natuurlijk klinkend
 - Gebruik geen emoji's in het gedicht zelf
+- Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
 - Laat de structuur natuurlijk en vrij stromen - geen strikte patronen${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
@@ -156,6 +158,9 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
       .replace(/```[\s\S]*?```/g, '') // Remove code blocks
       .replace(/^#+\s*/gm, '') // Remove markdown headers
       .trim();
+
+    // Filter out problematic term "zwarte piet" (case-insensitive) and replace with "Piet"
+    cleanedPoem = cleanedPoem.replace(/\b[zZ]warte\s+[pP]iet\b/gi, 'Piet');
 
     // Add required header and footer
     const header = 'Madrid, 5 december\n\n';
