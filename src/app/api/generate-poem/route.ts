@@ -121,6 +121,7 @@ ${
 - Maak het gedicht grappig, persoonlijk en passend bij de Sinterklaas traditie
 - Gebruik geen emoji's in het gedicht zelf
 - Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
+- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages (bijvoorbeeld "zwart", "zo zwart als roet", of andere kleurverwijzingen)
 - Houd je strikt aan de 4-regel groepen structuur${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
@@ -145,6 +146,7 @@ ${
 - Maak het gedicht grappig, persoonlijk en natuurlijk klinkend
 - Gebruik geen emoji's in het gedicht zelf
 - Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
+- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages (bijvoorbeeld "zwart", "zo zwart als roet", of andere kleurverwijzingen)
 - Laat de structuur natuurlijk en vrij stromen - geen strikte patronen${getHumanizeInstructions()}
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
@@ -159,8 +161,34 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
       .replace(/^#+\s*/gm, '') // Remove markdown headers
       .trim();
 
-    // Filter out problematic term "zwarte piet" (case-insensitive) and replace with "Piet"
+    // Filter out problematic terms and color references related to Piet or people
+    // Replace "zwarte piet" with "Piet"
     cleanedPoem = cleanedPoem.replace(/\b[zZ]warte\s+[pP]iet\b/gi, 'Piet');
+    
+    // Remove the specific problematic phrase "zo zwart als roet" entirely
+    cleanedPoem = cleanedPoem.replace(/\bzo\s+zwart\s+als\s+roet\b/gi, '');
+    
+    // Remove "als roet" phrase (common variation)
+    cleanedPoem = cleanedPoem.replace(/\bals\s+roet\b/gi, '');
+    
+    // Filter out "zwart" or "zwarte" when it appears in the same line as "Piet"
+    // Process line by line to avoid false positives
+    const lines = cleanedPoem.split('\n');
+    const filteredLines = lines.map((line) => {
+      // If line contains "Piet", remove color-related words from that line
+      if (/\b[Pp]iet\b/i.test(line)) {
+        // Remove "zwart" or "zwarte" from lines containing "Piet"
+        line = line.replace(/\b[zZ]warte?\b/gi, '');
+      }
+      return line;
+    });
+    cleanedPoem = filteredLines.join('\n');
+    
+    // Clean up any double spaces or awkward spacing created by replacements
+    cleanedPoem = cleanedPoem.replace(/\s{2,}/g, ' '); // Multiple spaces to single space
+    cleanedPoem = cleanedPoem.replace(/\n\s+/g, '\n'); // Spaces after newlines
+    cleanedPoem = cleanedPoem.replace(/\s+\n/g, '\n'); // Spaces before newlines
+    cleanedPoem = cleanedPoem.trim();
 
     // Add required header and footer
     const header = 'Madrid, 5 december\n\n';
