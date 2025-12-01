@@ -113,7 +113,8 @@ export default function ControlPanel({
             max="20"
             value={numLines}
             onChange={(e) => onNumLinesChange(Number.parseInt(e.target.value))}
-            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary touch-none"
+            style={{ touchAction: 'none' }}
             aria-valuemin={4}
             aria-valuemax={20}
             aria-valuenow={numLines}

@@ -205,8 +205,8 @@ export default function PoemGenerator() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto w-full overflow-x-hidden px-2 sm:px-0">
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+    <div className="max-w-6xl mx-auto w-full overflow-x-hidden px-2 sm:px-0 min-w-0">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full min-w-0">
         {/* Control Panel - Takes 1 column on large screens */}
         <div className="lg:col-span-1">
           <ControlPanel
