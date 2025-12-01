@@ -55,14 +55,15 @@ export default function ControlPanel({
   return (
     <Card className="p-4 sm:p-5 lg:p-6 bg-card border shadow-sm lg:sticky lg:top-6">
       <h2 className="text-base sm:text-lg lg:text-xl font-bold text-primary mb-4 sm:mb-6">
-        ✨ Start hier
+        <span aria-hidden="true">✨</span>
+        <span className="ml-1">Start hier</span>
       </h2>
 
       <div className="space-y-4 sm:space-y-6">
         {/* Recipient Name */}
         <div className="space-y-2">
           <label htmlFor="recipient-name" className="text-sm font-medium text-foreground">
-            Naam ontvanger
+            Naam ontvanger <span className="text-destructive" aria-label="verplicht veld">*</span>
           </label>
           <input
             id="recipient-name"
@@ -71,7 +72,12 @@ export default function ControlPanel({
             onChange={(e) => onRecipientNameChange(e.target.value)}
             placeholder="Bijv. Jan"
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            aria-required="true"
+            aria-describedby="recipient-name-description"
           />
+          <span id="recipient-name-description" className="sr-only">
+            Vul de naam in van de persoon voor wie je het gedicht wilt maken. Dit veld is verplicht.
+          </span>
         </div>
 
         {/* Recipient Facts */}
@@ -107,6 +113,10 @@ export default function ControlPanel({
             value={numLines}
             onChange={(e) => onNumLinesChange(Number.parseInt(e.target.value))}
             className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            aria-valuemin={4}
+            aria-valuemax={20}
+            aria-valuenow={numLines}
+            aria-label={`Aantal regels: ${numLines}`}
           />
           <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>4</span>
@@ -116,31 +126,55 @@ export default function ControlPanel({
 
         {/* Style Toggle */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground block">Gedicht Stijl</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => onStyleToggle(true)}
-              title="Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)"
-              className={`p-3 rounded-lg border-2 font-medium text-sm transition-all ${
-                isClassic
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
-              }`}
-            >
-              Klassiek
-            </button>
-            <button
-              onClick={() => onStyleToggle(false)}
-              title="Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
-              className={`p-3 rounded-lg border-2 font-medium text-sm transition-all ${
-                !isClassic
-                  ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                  : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
-              }`}
-            >
-              Vrij Stromend
-            </button>
-          </div>
+          <fieldset>
+            <legend className="text-sm font-medium text-foreground mb-2">Gedicht Stijl</legend>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Gedicht stijl selectie">
+              <button
+                onClick={() => onStyleToggle(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    onStyleToggle(false);
+                    (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
+                  }
+                }}
+                title="Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)"
+                className={`p-3 rounded-lg border-2 font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  isClassic
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
+                }`}
+                role="radio"
+                aria-checked={isClassic}
+                aria-label="Klassiek: Strikte structuur met groepen van 4 regels en AABB rijmstructuur"
+                tabIndex={isClassic ? 0 : -1}
+              >
+                Klassiek
+              </button>
+              <button
+                onClick={() => onStyleToggle(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    onStyleToggle(true);
+                    (e.currentTarget.previousElementSibling as HTMLElement)?.focus();
+                  }
+                }}
+                title="Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
+                className={`p-3 rounded-lg border-2 font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  !isClassic
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
+                }`}
+                role="radio"
+                aria-checked={!isClassic}
+                aria-label="Vrij Stromend: Variabele regelgroepen met flexibele of optionele rijm"
+                tabIndex={!isClassic ? 0 : -1}
+              >
+                Vrij Stromend
+              </button>
+            </div>
+          </fieldset>
         </div>
 
         {/* AI Mode Selection */}
@@ -255,6 +289,10 @@ export default function ControlPanel({
             value={[friendliness]}
             onValueChange={(value) => onFriendlinessChange(value[0])}
             className="w-full"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={friendliness}
+            aria-label={`Vriendelijkheid: ${getFriendlinessLabel()}`}
           />
           <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>Spicy</span>
@@ -268,24 +306,26 @@ export default function ControlPanel({
           disabled={isLoading}
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 sm:py-4 text-base rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           aria-disabled={isLoading}
+          aria-busy={isLoading}
+          aria-live="polite"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <span className="animate-spin">⏳</span>
+              <span className="animate-spin" aria-hidden="true">⏳</span>
               <span>Aan het genereren...</span>
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <span>✨</span>
+              <span aria-hidden="true">✨</span>
               <span>Genereer Gedicht</span>
             </span>
           )}
         </Button>
 
         {/* Info Box */}
-        <div className="bg-muted/50 border border-border rounded-lg p-3.5 space-y-1.5">
+        <div className="bg-muted/50 border border-border rounded-lg p-3.5 space-y-1.5" role="note" aria-label="Tip">
           <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
-            <span>💡</span>
+            <span aria-hidden="true">💡</span>
             <span>Tip</span>
           </p>
           <p className="text-xs sm:text-sm text-foreground/70 leading-relaxed">

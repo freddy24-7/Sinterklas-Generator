@@ -4,16 +4,23 @@ export default function SinterklaasHero() {
   return (
     <div className="text-center mb-12 sm:mb-16 lg:mb-20">
       <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-        <span>🎁</span>
+        <span aria-hidden="true">🎁</span>
         <span>Welkom bij het Sinterklaas Feest</span>
       </div>
       
       {/* Sinterklaas Illustration */}
       <div className="flex justify-center mb-6 sm:mb-8 px-4">
         <div className="relative w-full max-w-[192px] sm:max-w-[224px] lg:max-w-[256px] aspect-square">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl blur-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl blur-3xl" aria-hidden="true"></div>
           <div className="relative bg-card border border-border rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg overflow-hidden w-full h-full">
-            <svg viewBox="0 0 200 300" className="w-full h-full text-primary" fill="currentColor" preserveAspectRatio="xMidYMid meet">
+            <svg 
+              viewBox="0 0 200 300" 
+              className="w-full h-full text-primary" 
+              fill="currentColor" 
+              preserveAspectRatio="xMidYMid meet"
+              aria-label="Illustratie van Sinterklaas"
+              role="img"
+            >
               {/* Hat */}
               <ellipse cx="100" cy="50" rx="45" ry="20" fill="#c41e3a" />
               <polygon points="100,50 70,80 130,80" fill="#c41e3a" />

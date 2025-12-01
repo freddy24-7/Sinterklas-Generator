@@ -15,11 +15,11 @@ export default function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50" role="banner">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-shrink">
-            <span className="text-lg sm:text-xl font-bold text-primary flex-shrink-0">🎁</span>
+            <span className="text-lg sm:text-xl font-bold text-primary flex-shrink-0" aria-hidden="true">🎁</span>
             <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">Sinterklaas Gedichten</h1>
           </div>
 
@@ -29,8 +29,11 @@ export default function Header() {
                 variant="default"
                 size="sm"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm flex-shrink-0 whitespace-nowrap shadow-sm"
+                aria-label="Toon instructies voor gebruik van de Sinterklaas gedichten generator"
               >
-                ℹ️ Info
+                <span aria-hidden="true">ℹ️</span>
+                <span className="sr-only">Info</span>
+                <span className="ml-1">Info</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">

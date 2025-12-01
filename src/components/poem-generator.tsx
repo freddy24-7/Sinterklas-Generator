@@ -235,7 +235,7 @@ export default function PoemGenerator() {
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-card border shadow-sm">
             {generatedPoem && (
-              <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden">
+              <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden" role="toolbar" aria-label="Gedicht acties">
                 <Button
                   variant="outline"
                   size="sm"
@@ -243,24 +243,30 @@ export default function PoemGenerator() {
                     navigator.clipboard.writeText(generatedPoem);
                   }}
                   className="text-xs sm:text-sm flex-shrink-0"
+                  aria-label="Kopieer gedicht naar klembord"
                 >
-                  📋 Kopiëren
+                  <span aria-hidden="true">📋</span>
+                  <span className="ml-1">Kopiëren</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
                   className="text-xs sm:text-sm flex-shrink-0"
+                  aria-label="Print gedicht"
                 >
-                  🖨️ Print
+                  <span aria-hidden="true">🖨️</span>
+                  <span className="ml-1">Print</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDownloadPDF}
                   className="text-xs sm:text-sm flex-shrink-0"
+                  aria-label="Download gedicht als PDF"
                 >
-                  📄 PDF
+                  <span aria-hidden="true">📄</span>
+                  <span className="ml-1">PDF</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -270,24 +276,36 @@ export default function PoemGenerator() {
                     setError(null);
                   }}
                   className="text-xs sm:text-sm flex-shrink-0"
+                  aria-label="Wis gegenereerd gedicht"
                 >
-                  🔄 Wissen
+                  <span aria-hidden="true">🔄</span>
+                  <span className="ml-1">Wissen</span>
                 </Button>
               </div>
             )}
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <div 
+                className="mb-4 sm:mb-6 p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+              >
                 <p className="text-xs sm:text-sm text-destructive font-medium break-words">{error}</p>
               </div>
             )}
 
             {/* Loading State */}
             {isLoading && (
-              <div className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4">
+              <div 
+                className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4"
+                role="status"
+                aria-live="polite"
+                aria-label="Gedicht wordt gegenereerd"
+              >
                 <div className="space-y-4">
-                  <div className="text-3xl sm:text-4xl animate-pulse">⏳</div>
+                  <div className="text-3xl sm:text-4xl animate-pulse" aria-hidden="true">⏳</div>
                   <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
                     Gedicht wordt gegenereerd...
                   </p>
@@ -300,11 +318,16 @@ export default function PoemGenerator() {
 
             {/* Generated Poem */}
             {!isLoading && generatedPoem && (
-              <div className="space-y-4">
+              <div className="space-y-4" role="region" aria-label="Gegenereerd gedicht">
                 <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                  <p className="text-foreground whitespace-pre-line leading-relaxed font-serif text-sm sm:text-base lg:text-lg xl:text-xl break-words">
+                  <div 
+                    className="text-foreground whitespace-pre-line leading-relaxed font-serif text-sm sm:text-base lg:text-lg xl:text-xl break-words"
+                    role="article"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
                     {generatedPoem}
-                  </p>
+                  </div>
                 </div>
               </div>
             )}
