@@ -155,6 +155,9 @@ The app supports multiple environment variable names for the Google Gemini API k
 - `GOOGLE_GENERATIVE_AI_API_KEY`
 - `GOOGLE_AI_API_KEY`
 
+**SEO Configuration:**
+- `NEXT_PUBLIC_SITE_URL` - Your site's public URL (e.g., `https://your-domain.vercel.app`). Used for sitemap, robots.txt, and Open Graph metadata. If not set, defaults to `https://sinterklaas-gedichten.vercel.app`.
+
 ### Model Configuration
 
 By default, the app uses `gemini-2.0-flash`. You can override this by setting:
