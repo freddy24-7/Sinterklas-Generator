@@ -82,7 +82,7 @@ export default function ControlPanel({
 
         {/* Recipient Facts */}
         <div className="space-y-2">
-          <label htmlFor="recipient-facts" className="text-sm font-medium text-foreground">
+          <label id="recipient-facts-label" htmlFor="recipient-facts" className="text-sm font-medium text-foreground">
             Feiten die je wil meegeven over de ontvanger
           </label>
           <textarea
@@ -92,13 +92,14 @@ export default function ControlPanel({
             placeholder="Bijv. Houdt van koffie, speelt gitaar, werkt als leraar..."
             rows={4}
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+            aria-labelledby="recipient-facts-label"
           />
         </div>
 
         {/* Number of Lines */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <label htmlFor="lines" className="text-sm font-medium text-foreground">
+            <label id="lines-label" htmlFor="lines" className="text-sm font-medium text-foreground">
               Aantal Regels
             </label>
             <span className="inline-flex items-center justify-center min-w-[3rem] h-8 px-3 rounded-md bg-primary/10 text-primary font-semibold text-sm">
@@ -116,8 +117,10 @@ export default function ControlPanel({
             aria-valuemin={4}
             aria-valuemax={20}
             aria-valuenow={numLines}
-            aria-label={`Aantal regels: ${numLines}`}
+            aria-labelledby="lines-label"
+            aria-describedby="lines-value"
           />
+          <span id="lines-value" className="sr-only">Huidige waarde: {numLines} regels</span>
           <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>4</span>
             <span>20</span>
@@ -128,7 +131,8 @@ export default function ControlPanel({
         <div className="space-y-3">
           <fieldset>
             <legend className="text-sm font-medium text-foreground mb-2">Gedicht Stijl</legend>
-            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Gedicht stijl selectie">
+            <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="style-legend">
+              <span id="style-legend" className="sr-only">Gedicht stijl selectie</span>
               <button
                 onClick={() => onStyleToggle(true)}
                 onKeyDown={(e) => {
@@ -144,10 +148,8 @@ export default function ControlPanel({
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
                 }`}
-                role="radio"
-                aria-checked={isClassic}
+                aria-pressed={isClassic}
                 aria-label="Klassiek: Strikte structuur met groepen van 4 regels en AABB rijmstructuur"
-                tabIndex={isClassic ? 0 : -1}
               >
                 Klassiek
               </button>
@@ -166,10 +168,8 @@ export default function ControlPanel({
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
                 }`}
-                role="radio"
-                aria-checked={!isClassic}
+                aria-pressed={!isClassic}
                 aria-label="Vrij Stromend: Variabele regelgroepen met flexibele of optionele rijm"
-                tabIndex={!isClassic ? 0 : -1}
               >
                 Vrij Stromend
               </button>
@@ -179,42 +179,49 @@ export default function ControlPanel({
 
         {/* AI Mode Selection */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground block">AI Modus</label>
-          <div className="space-y-2.5">
-            <label
-              title="Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
-              className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <input
-                type="radio"
-                name="ai-mode"
-                checked={!isHumanize}
-                onChange={() => onHumanizeToggle(false)}
-                className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
-              />
-              <span className="text-sm text-foreground font-medium">Fully AI</span>
-            </label>
-            <label
-              title="Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
-              className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <input
-                type="radio"
-                name="ai-mode"
-                checked={isHumanize}
-                onChange={() => onHumanizeToggle(true)}
-                className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
-              />
-              <span className="text-sm text-foreground font-medium">Humanize</span>
-            </label>
-          </div>
+          <fieldset>
+            <legend className="text-sm font-medium text-foreground mb-2">AI Modus</legend>
+            <div className="space-y-2.5" role="radiogroup" aria-labelledby="ai-mode-legend">
+              <span id="ai-mode-legend" className="sr-only">AI modus selectie</span>
+              <label
+                title="Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+                className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <input
+                  type="radio"
+                  name="ai-mode"
+                  value="fully-ai"
+                  checked={!isHumanize}
+                  onChange={() => onHumanizeToggle(false)}
+                  className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
+                  aria-label="Fully AI: Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+                />
+                <span className="text-sm text-foreground font-medium">Fully AI</span>
+              </label>
+              <label
+                title="Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+                className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <input
+                  type="radio"
+                  name="ai-mode"
+                  value="humanize"
+                  checked={isHumanize}
+                  onChange={() => onHumanizeToggle(true)}
+                  className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
+                  aria-label="Humanize: Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+                />
+                <span className="text-sm text-foreground font-medium">Humanize</span>
+              </label>
+            </div>
+          </fieldset>
 
           {/* Humanize Options */}
           {isHumanize && (
             <div className="space-y-3 pl-6 pt-2 border-l-2 border-primary/20">
               <div className="space-y-2">
-                <label htmlFor="author-age" className="text-xs sm:text-sm font-medium text-foreground">
-                  Leeftijd schrijver
+                <label id="author-age-label" htmlFor="author-age" className="text-xs sm:text-sm font-medium text-foreground">
+                  Leeftijd schrijver{isHumanize && <span className="text-destructive ml-1" aria-label="verplicht veld">*</span>}
                 </label>
                 <input
                   id="author-age"
@@ -241,17 +248,21 @@ export default function ControlPanel({
                   }}
                   placeholder="Bijv. 12"
                   className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  aria-labelledby="author-age-label"
+                  aria-required={isHumanize}
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="author-gender" className="text-xs sm:text-sm font-medium text-foreground">
-                  Geslacht schrijver
+                <label id="author-gender-label" htmlFor="author-gender" className="text-xs sm:text-sm font-medium text-foreground">
+                  Geslacht schrijver{isHumanize && <span className="text-destructive ml-1" aria-label="verplicht veld">*</span>}
                 </label>
                 <select
                   id="author-gender"
                   value={authorGender}
                   onChange={(e) => onAuthorGenderChange(e.target.value)}
                   className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                  aria-labelledby="author-gender-label"
+                  aria-required={isHumanize}
                 >
                   <option value="">Selecteer...</option>
                   {authorAge && Number.parseInt(authorAge) >= 18 ? (
@@ -274,7 +285,7 @@ export default function ControlPanel({
         {/* Friendliness Scale */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <label htmlFor="friendliness" className="text-sm font-medium text-foreground">
+            <label id="friendliness-label" htmlFor="friendliness" className="text-sm font-medium text-foreground">
               Vriendelijkheid
             </label>
             <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
@@ -292,8 +303,10 @@ export default function ControlPanel({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={friendliness}
-            aria-label={`Vriendelijkheid: ${getFriendlinessLabel()}`}
+            aria-labelledby="friendliness-label"
+            aria-describedby="friendliness-value"
           />
+          <span id="friendliness-value" className="sr-only">Huidige waarde: {getFriendlinessLabel()}</span>
           <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>Spicy</span>
             <span>Vriendelijk</span>
