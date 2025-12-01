@@ -20,8 +20,6 @@ export default function SinterklaasHero() {
               preserveAspectRatio="xMidYMid meet"
               aria-label="Illustratie van Sinterklaas"
               role="img"
-              loading="eager"
-              fetchPriority="high"
             >
               {/* Hat */}
               <ellipse cx="100" cy="50" rx="45" ry="20" fill="#c41e3a" />

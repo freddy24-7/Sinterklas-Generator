@@ -23,8 +23,6 @@ const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
   },
-  // Optimize CSS loading
-  optimizeFonts: true,
   // Production source maps (disabled for smaller builds)
   productionBrowserSourceMaps: false,
 };

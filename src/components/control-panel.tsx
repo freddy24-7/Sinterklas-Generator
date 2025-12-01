@@ -60,8 +60,9 @@ export default function ControlPanel({
     
     const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
+      const isInputRange = target instanceof HTMLInputElement && target.type === 'range';
       const isSlider = target.closest('[data-slot="slider"]') || 
-                       target.type === 'range' || 
+                       isInputRange || 
                        target.closest('input[type="range"]');
       
       if (isSlider && e.touches.length > 0) {
