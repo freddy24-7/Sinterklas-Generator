@@ -9,8 +9,15 @@ import './globals.css';
 const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
+  display: 'swap',
+  preload: false, // Not critical for initial render
 });
-const geist = Geist({ subsets: ['latin'] });
+
+const geist = Geist({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true, // Critical font, preload it
+});
 
 export const metadata: Metadata = {
   title: {
@@ -106,6 +113,11 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <head>
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Structured data - defer loading */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

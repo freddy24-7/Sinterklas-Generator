@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ControlPanel from './control-panel';
-import jsPDF from 'jspdf';
 
 export default function PoemGenerator() {
   const [numLines, setNumLines] = useState(8);
@@ -19,9 +18,11 @@ export default function PoemGenerator() {
   const [generatedPoem, setGeneratedPoem] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!generatedPoem) return;
 
+    // Lazy load jsPDF only when needed
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
