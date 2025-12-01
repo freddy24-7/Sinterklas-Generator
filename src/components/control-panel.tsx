@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -52,6 +53,66 @@ export default function ControlPanel({
     return 'Heel Vriendelijk 🥰';
   };
 
+  // Ensure horizontal scroll is prevented after input interactions
+  useEffect(() => {
+    let touchStartX = 0;
+    let isInteractingWithSlider = false;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      const isSlider = target.closest('[data-slot="slider"]') || 
+                       target.type === 'range' || 
+                       target.closest('input[type="range"]');
+      
+      if (isSlider && e.touches.length > 0) {
+        isInteractingWithSlider = true;
+        touchStartX = e.touches[0].clientX;
+        // Force touch-action on body during slider interaction
+        document.body.style.touchAction = 'pan-y';
+      } else {
+        isInteractingWithSlider = false;
+      }
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isInteractingWithSlider && e.touches.length > 0) {
+        const currentX = e.touches[0].clientX;
+        const deltaX = Math.abs(currentX - touchStartX);
+        
+        // If significant horizontal movement detected, prevent default
+        if (deltaX > 3) {
+          e.preventDefault();
+          // Ensure body doesn't scroll horizontally
+          document.body.style.overflowX = 'hidden';
+        }
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      if (isInteractingWithSlider) {
+        // Reset after a short delay to ensure touch events complete
+        setTimeout(() => {
+          document.body.style.overflowX = '';
+          document.body.style.touchAction = '';
+          isInteractingWithSlider = false;
+        }, 100);
+      }
+    };
+    
+    // Use capture phase to catch events early
+    document.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      document.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      document.body.style.overflowX = '';
+      document.body.style.touchAction = '';
+    };
+  }, []);
+
   return (
     <Card className="p-4 sm:p-5 lg:p-6 bg-card border shadow-sm lg:sticky lg:top-6">
       <h2 className="text-base sm:text-lg lg:text-xl font-bold text-primary mb-4 sm:mb-6">
@@ -70,8 +131,13 @@ export default function ControlPanel({
             type="text"
             value={recipientName}
             onChange={(e) => onRecipientNameChange(e.target.value)}
+            onBlur={(e) => {
+              // Prevent horizontal scroll after input blur
+              e.preventDefault();
+            }}
             placeholder="Bijv. Jan"
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+            style={{ touchAction: 'pan-y' }}
             aria-required="true"
             aria-describedby="recipient-name-description"
           />
@@ -89,9 +155,14 @@ export default function ControlPanel({
             id="recipient-facts"
             value={recipientFacts}
             onChange={(e) => onRecipientFactsChange(e.target.value)}
+            onBlur={(e) => {
+              // Prevent horizontal scroll after input blur
+              e.preventDefault();
+            }}
             placeholder="Bijv. Houdt van koffie, speelt gitaar, werkt als leraar..."
             rows={4}
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+            style={{ touchAction: 'pan-y' }}
             aria-labelledby="recipient-facts-label"
           />
         </div>
@@ -113,6 +184,42 @@ export default function ControlPanel({
             max="20"
             value={numLines}
             onChange={(e) => onNumLinesChange(Number.parseInt(e.target.value))}
+            onTouchStart={(e) => {
+              // Prevent horizontal scrolling when touching range slider
+              const touch = e.touches[0];
+              if (touch) {
+                const startX = touch.clientX;
+                const startY = touch.clientY;
+                let isSliding = false;
+                
+                const handleTouchMove = (moveEvent: TouchEvent) => {
+                  const currentTouch = moveEvent.touches[0];
+                  if (currentTouch) {
+                    const deltaX = Math.abs(currentTouch.clientX - startX);
+                    const deltaY = Math.abs(currentTouch.clientY - startY);
+                    
+                    // If horizontal movement is detected, prevent default scrolling
+                    if (deltaX > 5 || isSliding) {
+                      isSliding = true;
+                      // Prevent horizontal scrolling
+                      moveEvent.preventDefault();
+                      // Also prevent body scroll
+                      document.body.style.overflowX = 'hidden';
+                    }
+                  }
+                };
+                
+                const handleTouchEnd = () => {
+                  isSliding = false;
+                  document.body.style.overflowX = '';
+                  document.removeEventListener('touchmove', handleTouchMove);
+                  document.removeEventListener('touchend', handleTouchEnd);
+                };
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                document.addEventListener('touchend', handleTouchEnd);
+              }
+            }}
             className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary touch-none"
             style={{ touchAction: 'none' }}
             aria-valuemin={4}

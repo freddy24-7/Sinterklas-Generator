@@ -47,6 +47,44 @@ function Slider({
     }
   }, [value, min, max]);
 
+  // Prevent horizontal scrolling during slider interaction
+  const handleTouchStart = React.useCallback((e: React.TouchEvent) => {
+    // Prevent horizontal scrolling when touching slider
+    const touch = e.touches[0];
+    if (touch) {
+      const startX = touch.clientX;
+      const startY = touch.clientY;
+      let isSliding = false;
+      
+      const handleTouchMove = (moveEvent: TouchEvent) => {
+        const currentTouch = moveEvent.touches[0];
+        if (currentTouch) {
+          const deltaX = Math.abs(currentTouch.clientX - startX);
+          const deltaY = Math.abs(currentTouch.clientY - startY);
+          
+          // If horizontal movement is detected, prevent default scrolling
+          if (deltaX > 5 || isSliding) {
+            isSliding = true;
+            // Prevent horizontal scrolling
+            moveEvent.preventDefault();
+            // Also prevent body scroll
+            document.body.style.overflowX = 'hidden';
+          }
+        }
+      };
+      
+      const handleTouchEnd = () => {
+        isSliding = false;
+        document.body.style.overflowX = '';
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+      
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+  }, []);
+
   return (
     <SliderPrimitive.Root
       ref={rootRef}
@@ -61,6 +99,7 @@ function Slider({
         className
       )}
       style={{ touchAction: 'none' }}
+      onTouchStart={handleTouchStart}
       {...rootProps}
     >
       <SliderPrimitive.Track

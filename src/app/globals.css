@@ -146,6 +146,20 @@
     position: relative;
   }
   
+  /* Ensure sliders maintain touch-action after input interactions */
+  input[type="range"],
+  [data-slot="slider"],
+  [data-slot="slider-thumb"] {
+    touch-action: none !important;
+  }
+  
+  /* Allow vertical scrolling in text inputs but prevent horizontal */
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    touch-action: pan-y;
+  }
+  
   /* Screen reader only - visually hidden but accessible to assistive technologies */
   .sr-only {
     position: absolute;
