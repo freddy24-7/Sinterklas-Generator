@@ -8,8 +8,6 @@ const nextConfig: NextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
-  // SWC minification (enabled by default in Next.js 16, but explicit for clarity)
-  swcMinify: true,
   // Optimize for modern browsers
   experimental: {
     optimizePackageImports: [
