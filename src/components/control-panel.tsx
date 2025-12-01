@@ -300,9 +300,6 @@ export default function ControlPanel({
             value={[friendliness]}
             onValueChange={(value) => onFriendlinessChange(value[0])}
             className="w-full"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={friendliness}
             aria-labelledby="friendliness-label"
             aria-describedby="friendliness-value"
           />

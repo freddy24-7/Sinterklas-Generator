@@ -309,7 +309,7 @@ export default function PoemGenerator() {
                   <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
                     Gedicht wordt gegenereerd...
                   </p>
-                  <p className="text-xs sm:text-sm text-foreground/50">
+                  <p className="text-xs sm:text-sm text-foreground/70">
                     Dit kan even duren
                   </p>
                 </div>
@@ -340,7 +340,7 @@ export default function PoemGenerator() {
                   <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
                     Nog niets gegenereerd
                   </p>
-                  <p className="text-xs sm:text-sm text-foreground/50">
+                  <p className="text-xs sm:text-sm text-foreground/70">
                     Vul de naam van de ontvanger in en klik op "Genereer Gedicht" om te beginnen
                   </p>
                 </div>

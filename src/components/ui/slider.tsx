@@ -13,6 +13,8 @@ function Slider({
   max = 100,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
+  const rootRef = React.useRef<HTMLSpanElement>(null);
+
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -23,8 +25,31 @@ function Slider({
     [value, defaultValue, min, max]
   );
 
+  // Extract ARIA props to pass to thumb
+  const ariaLabelledBy = props['aria-labelledby'];
+  const ariaLabel = props['aria-label'];
+  const ariaDescribedBy = props['aria-describedby'];
+
+  // Remove ARIA attributes from props that shouldn't be on root
+  const {
+    'aria-valuemin': _ariaValuemin,
+    'aria-valuemax': _ariaValuemax,
+    'aria-valuenow': _ariaValuenow,
+    ...rootProps
+  } = props;
+
+  // Remove ARIA slider attributes from root after Radix UI applies them
+  React.useEffect(() => {
+    if (rootRef.current) {
+      rootRef.current.removeAttribute('aria-valuemin');
+      rootRef.current.removeAttribute('aria-valuemax');
+      rootRef.current.removeAttribute('aria-valuenow');
+    }
+  }, [value, min, max]);
+
   return (
     <SliderPrimitive.Root
+      ref={rootRef}
       data-slot="slider"
       defaultValue={defaultValue}
       value={value}
@@ -34,7 +59,7 @@ function Slider({
         'relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col',
         className
       )}
-      {...props}
+      {...rootProps}
     >
       <SliderPrimitive.Track
         data-slot="slider-track"
@@ -49,13 +74,18 @@ function Slider({
           )}
         />
       </SliderPrimitive.Track>
-      {Array.from({ length: _values.length }, (_, index) => (
-        <SliderPrimitive.Thumb
-          data-slot="slider-thumb"
-          key={index}
-          className="border-primary ring-ring/50 block size-4 shrink-0 rounded-full border bg-white shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        />
-      ))}
+      {Array.from({ length: _values.length }, (_, index) => {
+        return (
+          <SliderPrimitive.Thumb
+            data-slot="slider-thumb"
+            key={index}
+            className="border-primary ring-ring/50 block size-4 shrink-0 rounded-full border bg-white shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+            aria-labelledby={ariaLabelledBy}
+            aria-label={ariaLabel}
+            aria-describedby={ariaDescribedBy}
+          />
+        );
+      })}
     </SliderPrimitive.Root>
   );
 }
