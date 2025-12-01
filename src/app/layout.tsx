@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://sinterklaas-gedichten.vercel.app'
+    'https://www.sinterklaas-poem.nl/'
   ),
   alternates: {
     canonical: '/',
@@ -101,7 +101,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sinterklaas-gedichten.vercel.app';
+  const siteUrl = 'https://www.sinterklaas-poem.nl';
 
   return (
     <html lang="nl">
