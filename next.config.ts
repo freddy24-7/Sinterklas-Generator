@@ -8,9 +8,16 @@ const nextConfig: NextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  // SWC minification (enabled by default in Next.js 16, but explicit for clarity)
+  swcMinify: true,
   // Optimize for modern browsers
   experimental: {
-    optimizePackageImports: ['@radix-ui/react-dialog', '@radix-ui/react-slider'],
+    optimizePackageImports: [
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-slot',
+    ],
   },
   // Enable compression
   compress: true,
@@ -18,6 +25,10 @@ const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
   },
+  // Optimize CSS loading
+  optimizeFonts: true,
+  // Production source maps (disabled for smaller builds)
+  productionBrowserSourceMaps: false,
 };
 
 export default nextConfig;

@@ -117,7 +117,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Structured data - defer loading */}
+        {/* DNS prefetch for analytics */}
+        <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
+        
+        {/* Structured data - defer loading with async */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
