@@ -25,8 +25,8 @@ export default function Header() {
             <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">{t('header.title')}</h1>
           </div>
 
-          {/* Language Selectors */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          {/* Language Selectors - Hidden on mobile, visible on larger screens */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* UI Language Selector */}
             <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
               <label className="text-[10px] sm:text-xs text-foreground/70 whitespace-nowrap">{t('language.infoLabel')}</label>
