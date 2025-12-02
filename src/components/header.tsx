@@ -328,7 +328,7 @@ export default function Header() {
                 <span className="ml-1">{t('header.infoButton')}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto sm:max-w-lg w-[95vw] sm:w-full mx-2 sm:mx-0">
+            <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto !mx-2 sm:!mx-4 !w-[calc(100vw-1rem)] sm:!w-full !max-w-[calc(100vw-1rem)] sm:!max-w-lg !left-[50%] !translate-x-[-50%]">
               <DialogHeader>
                 <DialogTitle>{t('header.instructions.title')}</DialogTitle>
                 <DialogDescription>
