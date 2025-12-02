@@ -20,12 +20,26 @@ export default function Header() {
   const { language, setLanguage, poemLanguage, setPoemLanguage, t } = useLanguage();
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640);
+      // Use requestAnimationFrame to batch DOM reads and avoid forced reflows
+      requestAnimationFrame(() => {
+        setIsMobile(window.innerWidth < 640);
+      });
     };
+    
+    // Debounce resize events to reduce forced reflows
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkMobile, 150);
+    };
+    
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   return (

@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
+  // Optimize for modern browsers - reduce transpilation
+  transpilePackages: [],
   // Optimize for modern browsers
   experimental: {
     optimizePackageImports: [

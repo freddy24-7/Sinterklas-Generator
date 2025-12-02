@@ -1,9 +1,8 @@
-# Modern browsers only - reduces legacy JavaScript polyfills
-last 2 Chrome versions
-last 2 Firefox versions
-last 2 Safari versions
-last 2 Edge versions
-not dead
+defaults and supports es6-module
+maintained node versions
 not IE 11
-
-
+not dead
+Chrome >= 90
+Firefox >= 88
+Safari >= 14
+Edge >= 90

@@ -67,15 +67,20 @@ function Slider({
             isSliding = true;
             // Prevent horizontal scrolling
             moveEvent.preventDefault();
-            // Also prevent body scroll
-            document.body.style.overflowX = 'hidden';
+            // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+            requestAnimationFrame(() => {
+              document.body.style.overflowX = 'hidden';
+            });
           }
         }
       };
       
       const handleTouchEnd = () => {
         isSliding = false;
-        document.body.style.overflowX = '';
+        // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+        requestAnimationFrame(() => {
+          document.body.style.overflowX = '';
+        });
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
       };

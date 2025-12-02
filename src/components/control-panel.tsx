@@ -72,8 +72,10 @@ export default function ControlPanel({
       if (isSlider && e.touches.length > 0) {
         isInteractingWithSlider = true;
         touchStartX = e.touches[0].clientX;
-        // Force touch-action on body during slider interaction
-        document.body.style.touchAction = 'pan-y';
+        // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+        requestAnimationFrame(() => {
+          document.body.style.touchAction = 'pan-y';
+        });
       } else {
         isInteractingWithSlider = false;
       }
@@ -87,8 +89,10 @@ export default function ControlPanel({
         // If significant horizontal movement detected, prevent default
         if (deltaX > 3) {
           e.preventDefault();
-          // Ensure body doesn't scroll horizontally
-          document.body.style.overflowX = 'hidden';
+          // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+          requestAnimationFrame(() => {
+            document.body.style.overflowX = 'hidden';
+          });
         }
       }
     };
@@ -96,9 +100,12 @@ export default function ControlPanel({
     const handleTouchEnd = () => {
       if (isInteractingWithSlider) {
         // Reset after a short delay to ensure touch events complete
+        // Use requestAnimationFrame to batch DOM writes
         setTimeout(() => {
-          document.body.style.overflowX = '';
-          document.body.style.touchAction = '';
+          requestAnimationFrame(() => {
+            document.body.style.overflowX = '';
+            document.body.style.touchAction = '';
+          });
           isInteractingWithSlider = false;
         }, 100);
       }
@@ -113,8 +120,11 @@ export default function ControlPanel({
       document.removeEventListener('touchstart', handleTouchStart, { capture: true });
       document.removeEventListener('touchmove', handleTouchMove, { capture: true });
       document.removeEventListener('touchend', handleTouchEnd, { capture: true });
-      document.body.style.overflowX = '';
-      document.body.style.touchAction = '';
+      // Batch DOM writes on cleanup to avoid forced reflows
+      requestAnimationFrame(() => {
+        document.body.style.overflowX = '';
+        document.body.style.touchAction = '';
+      });
     };
   }, []);
 
@@ -208,15 +218,20 @@ export default function ControlPanel({
                       isSliding = true;
                       // Prevent horizontal scrolling
                       moveEvent.preventDefault();
-                      // Also prevent body scroll
-                      document.body.style.overflowX = 'hidden';
+                      // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+                      requestAnimationFrame(() => {
+                        document.body.style.overflowX = 'hidden';
+                      });
                     }
                   }
                 };
                 
                 const handleTouchEnd = () => {
                   isSliding = false;
-                  document.body.style.overflowX = '';
+                  // Batch DOM writes using requestAnimationFrame to avoid forced reflows
+                  requestAnimationFrame(() => {
+                    document.body.style.overflowX = '';
+                  });
                   document.removeEventListener('touchmove', handleTouchMove);
                   document.removeEventListener('touchend', handleTouchEnd);
                 };
