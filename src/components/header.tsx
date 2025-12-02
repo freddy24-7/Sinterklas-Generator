@@ -10,10 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLanguage } from '@/lib/language-context';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, setLanguage, poemLanguage, setPoemLanguage, t } = useLanguage();
 
   return (
@@ -24,6 +26,188 @@ export default function Header() {
             <span className="text-lg sm:text-xl font-bold text-primary flex-shrink-0" aria-hidden="true">🎁</span>
             <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">{t('header.title')}</h1>
           </div>
+
+          {/* Mobile Hamburger Menu - Visible only on mobile */}
+          <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="sm:hidden p-2 h-9 w-9"
+                aria-label="Menu"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:hidden fixed right-0 top-0 h-full w-[85vw] max-w-sm translate-x-0 translate-y-0 rounded-none rounded-l-lg border-l border-t-0 border-b-0 border-r-0 p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right">
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h2 className="text-lg font-semibold">{t('header.title')}</h2>
+                  <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                    <span className="sr-only">Close</span>
+                    <svg className="h-5 w-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                      <path d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </DialogPrimitive.Close>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                  {/* Language Selectors */}
+                  <div className="space-y-4">
+                    {/* UI Language Selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">{t('language.infoLabel')}</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        <button
+                          onClick={() => {
+                            setLanguage('nl');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            language === 'nl'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.infoLabel')} ${t('language.dutch')}`}
+                        >
+                          NL
+                        </button>
+                        <button
+                          onClick={() => {
+                            setLanguage('en');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            language === 'en'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.infoLabel')} ${t('language.english')}`}
+                        >
+                          EN
+                        </button>
+                        <button
+                          onClick={() => {
+                            setLanguage('ar');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            language === 'ar'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.infoLabel')} ${t('language.moroccan')}`}
+                        >
+                          AR
+                        </button>
+                        <button
+                          onClick={() => {
+                            setLanguage('tr');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            language === 'tr'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.infoLabel')} ${t('language.turkish')}`}
+                        >
+                          TR
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Poem Language Selector */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">{t('language.poemLabel')}</label>
+                      <div className="grid grid-cols-4 gap-2">
+                        <button
+                          onClick={() => {
+                            setPoemLanguage('nl');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            poemLanguage === 'nl'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.poemLabel')} ${t('language.dutch')}`}
+                        >
+                          NL
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPoemLanguage('en');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            poemLanguage === 'en'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.poemLabel')} ${t('language.english')}`}
+                        >
+                          EN
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPoemLanguage('ar');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            poemLanguage === 'ar'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.poemLabel')} ${t('language.moroccan')}`}
+                        >
+                          AR
+                        </button>
+                        <button
+                          onClick={() => {
+                            setPoemLanguage('tr');
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                            poemLanguage === 'tr'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted hover:bg-muted/80'
+                          }`}
+                          aria-label={`${t('language.poemLabel')} ${t('language.turkish')}`}
+                        >
+                          TR
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Button */}
+                  <div className="pt-4 border-t">
+                    <Button
+                      variant="default"
+                      className="w-full"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setOpen(true);
+                      }}
+                    >
+                      <span aria-hidden="true">ℹ️</span>
+                      <span className="ml-2">{t('header.infoButton')}</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Language Selectors - Hidden on mobile, visible on larger screens */}
           <div className="hidden sm:flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -130,12 +314,13 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Info Button - Hidden on mobile, visible on larger screens */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
                 variant="default"
                 size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm flex-shrink-0 whitespace-nowrap shadow-sm"
+                className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm flex-shrink-0 whitespace-nowrap shadow-sm"
                 aria-label={t('header.infoAriaLabel')}
               >
                 <span aria-hidden="true">ℹ️</span>
