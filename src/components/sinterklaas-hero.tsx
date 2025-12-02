@@ -1,11 +1,15 @@
 'use client';
 
+import { useLanguage } from '@/lib/language-context';
+
 export default function SinterklaasHero() {
+  const { t } = useLanguage();
+
   return (
     <div className="text-center mb-12 sm:mb-16 lg:mb-20">
       <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
         <span aria-hidden="true">🎁</span>
-        <span>Welkom bij het Sinterklaas Feest</span>
+        <span>{t('hero.welcome')}</span>
       </div>
       
       {/* Sinterklaas Illustration - Optimized for LCP */}
@@ -18,7 +22,7 @@ export default function SinterklaasHero() {
               className="w-full h-full text-primary" 
               fill="currentColor" 
               preserveAspectRatio="xMidYMid meet"
-              aria-label="Illustratie van Sinterklaas"
+              aria-label={t('hero.title')}
               role="img"
             >
               {/* Hat */}
@@ -61,12 +65,10 @@ export default function SinterklaasHero() {
       </div>
 
       <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 sm:mb-6">
-        <span className="text-foreground">Sinterklaas </span>
-        <span className="text-primary">Gedichten</span>
+        <span className="text-foreground">{t('hero.title')}</span>
       </h1>
       <p className="text-base sm:text-lg lg:text-xl text-foreground/70 max-w-2xl mx-auto leading-relaxed px-4">
-        Genereer persoonlijke en grappige Sinterklaas gedichten voor je vrienden en familie. Kies je stijl en bepaal de
-        vriendelijkheid.
+        {t('hero.description')}
       </p>
     </div>
   );

@@ -1,0 +1,192 @@
+{
+  "hero": {
+    "welcome": "Sinterklaas Kutlamasına Hoş Geldiniz",
+    "title": "Sinterklaas Şiirleri",
+    "description": "Arkadaşlarınız ve aileniz için kişisel ve eğlenceli Sinterklaas şiirleri oluşturun. Stilinizi seçin ve samimiyeti ayarlayın."
+  },
+  "controlPanel": {
+    "title": "Buradan başlayın",
+    "recipientName": {
+      "label": "Alıcı adı",
+      "placeholder": "Örn. Ahmet",
+      "description": "Şiiri kime yazmak istediğiniz kişinin adını girin. Bu alan zorunludur.",
+      "required": "zorunlu alan"
+    },
+    "recipientFacts": {
+      "label": "Alıcı hakkında eklemek istediğiniz bilgiler",
+      "placeholder": "Örn. Kahve sever, gitar çalar, öğretmen olarak çalışır..."
+    },
+    "numLines": {
+      "label": "Satır Sayısı",
+      "value": "Mevcut değer: {numLines} satır"
+    },
+    "style": {
+      "label": "Şiir Stili",
+      "classic": {
+        "label": "Klasik",
+        "description": "4 satırlık gruplar ve AABB kafiye yapısı ile katı yapı (ör. 12 satır için 4+4+4)"
+      },
+      "free": {
+        "label": "Serbest Akış",
+        "description": "Esnek veya isteğe bağlı kafiye ile değişken satır grupları (ör. 2+3+7)"
+      }
+    },
+    "aiMode": {
+      "label": "AI Modu",
+      "fullyAi": {
+        "label": "Tamamen AI",
+        "description": "Şiir insan hatası olmadan oluşturulur - mükemmel ve cilalı"
+      },
+      "humanize": {
+        "label": "İnsanlaştır",
+        "description": "Şiir, yazarın yaşı ve cinsiyetine özgü 2-3 ince hata içerir"
+      }
+    },
+    "authorAge": {
+      "label": "Yazar yaşı",
+      "placeholder": "Örn. 12"
+    },
+    "authorGender": {
+      "label": "Yazar cinsiyeti",
+      "select": "Seçin...",
+      "options": {
+        "man": "Erkek",
+        "vrouw": "Kadın",
+        "jongen": "Erkek çocuk",
+        "meisje": "Kız çocuk"
+      }
+    },
+    "friendliness": {
+      "label": "Samimiyet",
+      "labels": {
+        "spicy": "Acılı 🌶️",
+        "funny": "Komik 😄",
+        "normal": "Normal 😊",
+        "veryFriendly": "Çok Samimi 🥰"
+      },
+      "scale": {
+        "min": "Acılı",
+        "max": "Samimi"
+      }
+    },
+    "generateButton": {
+      "text": "Şiir Oluştur",
+      "loading": "Oluşturuluyor..."
+    },
+    "tip": {
+      "title": "İpucu",
+      "text": "Düşük samimiyet daha keskin şakalar verir, yüksek samimiyet daha nazik iltifatlar verir."
+    }
+  },
+  "poemGenerator": {
+    "errors": {
+      "noRecipientName": "Lütfen alıcının adını girin",
+      "noAuthorAge": "Lütfen yazarın yaşını girin",
+      "noAuthorGender": "Lütfen yazarın cinsiyetini seçin",
+      "rateLimit": "Çok fazla istek. Lütfen biraz bekleyin ve tekrar deneyin.",
+      "generic": "Bir hata oluştu",
+      "noPoem": "Sunucudan şiir alınamadı",
+      "unknown": "Bilinmeyen bir hata oluştu"
+    },
+    "loading": {
+      "title": "Şiir oluşturuluyor...",
+      "subtitle": "Bu biraz zaman alabilir"
+    },
+    "empty": {
+      "title": "Henüz hiçbir şey oluşturulmadı",
+      "description": "Alıcının adını girin ve başlamak için \"Şiir Oluştur\"a tıklayın"
+    },
+    "actions": {
+      "copy": "Kopyala",
+      "print": "Yazdır",
+      "pdf": "PDF",
+      "clear": "Temizle",
+      "ariaLabels": {
+        "copy": "Şiiri panoya kopyala",
+        "print": "Şiiri yazdır",
+        "pdf": "Şiiri PDF olarak indir",
+        "clear": "Oluşturulan şiiri temizle"
+      }
+    }
+  },
+  "header": {
+    "title": "Sinterklaas Şiirleri",
+    "infoButton": "Bilgi",
+    "infoAriaLabel": "Sinterklaas şiir oluşturucu kullanım talimatlarını göster",
+    "instructions": {
+      "title": "Nasıl kullanılır",
+      "description": "Sinterklaas şiir oluşturucuyu nasıl kullanacağınızı öğrenin",
+      "sections": {
+        "language": {
+          "title": "1. Dil seçimi",
+          "infoText": "Sayfanın üst kısmında iki dil seçici bulacaksınız:",
+          "infoDescription": "\"Bilgileri şu dilde istiyorum:\" - Talimatları ve arayüzü hangi dilde görmek istediğinizi seçin. Bu, web sitesindeki tüm metinleri (etiketler, düğmeler vb.) seçilen dile değiştirir.",
+          "poemDescription": "\"Şiirimi şu dilde istiyorum:\" - Şiirinizin hangi dilde oluşturulması gerektiğini seçin. Oluşturulan şiir, arayüz dilinden bağımsız olarak bu dilde olacaktır."
+        },
+        "recipientName": {
+          "title": "2. Alıcı adı",
+          "text": "Şiiri kime yazmak istediğiniz kişinin adını girin. Bu alan zorunludur."
+        },
+        "recipientFacts": {
+          "title": "3. Alıcı hakkında bilgiler",
+          "text": "İsteğe bağlı: Şiire dahil etmek istediğiniz hobiler, ilgi alanları veya komik anekdotlar gibi kişisel bilgiler ekleyin."
+        },
+        "numLines": {
+          "title": "4. Satır sayısı",
+          "text": "Şiiriniz için 4 ile 20 satır arasında seçim yapın. Sayıyı ayarlamak için kaydırıcıyı kullanın."
+        },
+        "style": {
+          "title": "5. Şiir stili",
+          "classic": "Klasik: 4 satırlık gruplar ve AABB kafiye yapısı ile katı yapı (ör. 12 satır için 4+4+4)",
+          "free": "Serbest Akış: Esnek veya isteğe bağlı kafiye ile değişken satır grupları (ör. 2+3+7)"
+        },
+        "aiMode": {
+          "title": "6. AI Modu",
+          "intro": "İki mod arasında seçim yapın:",
+          "fullyAi": "Tamamen AI: Şiir insan hatası olmadan oluşturulur - mükemmel ve cilalı.",
+          "humanize": "İnsanlaştır: Şiir, yazarın yaşı ve cinsiyetine özgü 2-3 ince hata içerir. Otantik bir el yazısı hissi almak için yaş ve cinsiyeti girin."
+        },
+        "friendliness": {
+          "title": "7. Samimiyet",
+          "intro": "Şiirinizin tonunu ayarlayın:",
+          "spicy": "Acılı (0-39): Mizah dokunuşu ile komik ve keskin",
+          "normal": "Normal (40-69): Nötr ve dengeli",
+          "friendly": "Samimi (70-100): Çok samimi ve olumlu"
+        },
+        "generate": {
+          "title": "8. Oluştur ve indir",
+          "text": "Kişisel Sinterklaas şiirinizi oluşturmak için \"Şiir Oluştur\"a tıklayın. Şiiri kopyalayabilir, yazdırabilir veya PDF olarak indirebilirsiniz."
+        }
+      },
+      "tip": "💡 İpucu: Tüm şiirler \"Madrid, 5 Aralık\" ile başlar ve \"Sint ve Piet\" ile biter"
+    }
+  },
+  "footer": {
+    "description": "Kişisel Sinterklaas şiirleri oluşturun",
+    "copyright": "© {year} Sinterklaas Şiir Oluşturucu",
+    "madeWith": "Sinterklaas için ❤️ ile yapıldı",
+    "contact": "İletişim"
+  },
+  "contactForm": {
+    "title": "Bize Ulaşın",
+    "description": "Bize bir mesaj gönderin, en kısa sürede size geri döneceğiz.",
+    "emailLabel": "E-posta Adresiniz",
+    "emailPlaceholder": "ornek@email.com",
+    "messageLabel": "Mesaj",
+    "messagePlaceholder": "Mesajınızı buraya yazın...",
+    "submit": "Mesaj Gönder",
+    "sending": "Gönderiliyor...",
+    "success": "Mesaj başarıyla gönderildi! En kısa sürede size geri döneceğiz.",
+    "error": "Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin."
+  },
+  "language": {
+    "label": "Dil",
+    "infoLabel": "Bilgileri şu dilde istiyorum:",
+    "poemLabel": "Şiirimi şu dilde istiyorum:",
+    "dutch": "Nederlands",
+    "english": "English",
+    "moroccan": "العربية",
+    "turkish": "Türkçe"
+  }
+}
+

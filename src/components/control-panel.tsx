@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { useLanguage } from '@/lib/language-context';
+import type { Language } from '@/lib/language-context';
 
 interface ControlPanelProps {
   numLines: number;
@@ -46,11 +48,13 @@ export default function ControlPanel({
   isLoading,
   onGeneratePoem,
 }: ControlPanelProps) {
+  const { t } = useLanguage();
+
   const getFriendlinessLabel = () => {
-    if (friendliness === 0) return 'Spicy 🌶️';
-    if (friendliness < 40) return 'Grappig 😄';
-    if (friendliness < 70) return 'Normaal 😊';
-    return 'Heel Vriendelijk 🥰';
+    if (friendliness === 0) return t('controlPanel.friendliness.labels.spicy');
+    if (friendliness < 40) return t('controlPanel.friendliness.labels.funny');
+    if (friendliness < 70) return t('controlPanel.friendliness.labels.normal');
+    return t('controlPanel.friendliness.labels.veryFriendly');
   };
 
   // Ensure horizontal scroll is prevented after input interactions
@@ -118,14 +122,14 @@ export default function ControlPanel({
     <Card className="p-4 sm:p-5 lg:p-6 bg-card border shadow-sm lg:sticky lg:top-6">
       <h2 className="text-base sm:text-lg lg:text-xl font-bold text-primary mb-4 sm:mb-6">
         <span aria-hidden="true">✨</span>
-        <span className="ml-1">Start hier</span>
+        <span className="ml-1">{t('controlPanel.title')}</span>
       </h2>
 
       <div className="space-y-4 sm:space-y-6">
         {/* Recipient Name */}
         <div className="space-y-2">
           <label htmlFor="recipient-name" className="text-sm font-medium text-foreground">
-            Naam ontvanger <span className="text-destructive" aria-label="verplicht veld">*</span>
+            {t('controlPanel.recipientName.label')} <span className="text-destructive" aria-label={t('controlPanel.recipientName.required')}>*</span>
           </label>
           <input
             id="recipient-name"
@@ -136,21 +140,21 @@ export default function ControlPanel({
               // Prevent horizontal scroll after input blur
               e.preventDefault();
             }}
-            placeholder="Bijv. Jan"
+            placeholder={t('controlPanel.recipientName.placeholder')}
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
             style={{ touchAction: 'pan-y' }}
             aria-required="true"
             aria-describedby="recipient-name-description"
           />
           <span id="recipient-name-description" className="sr-only">
-            Vul de naam in van de persoon voor wie je het gedicht wilt maken. Dit veld is verplicht.
+            {t('controlPanel.recipientName.description')}
           </span>
         </div>
 
         {/* Recipient Facts */}
         <div className="space-y-2">
           <label id="recipient-facts-label" htmlFor="recipient-facts" className="text-sm font-medium text-foreground">
-            Feiten die je wil meegeven over de ontvanger
+            {t('controlPanel.recipientFacts.label')}
           </label>
           <textarea
             id="recipient-facts"
@@ -160,7 +164,7 @@ export default function ControlPanel({
               // Prevent horizontal scroll after input blur
               e.preventDefault();
             }}
-            placeholder="Bijv. Houdt van koffie, speelt gitaar, werkt als leraar..."
+            placeholder={t('controlPanel.recipientFacts.placeholder')}
             rows={4}
             className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
             style={{ touchAction: 'pan-y' }}
@@ -172,7 +176,7 @@ export default function ControlPanel({
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <label id="lines-label" htmlFor="lines" className="text-sm font-medium text-foreground">
-              Aantal Regels
+              {t('controlPanel.numLines.label')}
             </label>
             <span className="inline-flex items-center justify-center min-w-[3rem] h-8 px-3 rounded-md bg-primary/10 text-primary font-semibold text-sm">
               {numLines}
@@ -229,7 +233,7 @@ export default function ControlPanel({
             aria-labelledby="lines-label"
             aria-describedby="lines-value"
           />
-          <span id="lines-value" className="sr-only">Huidige waarde: {numLines} regels</span>
+          <span id="lines-value" className="sr-only">{t('controlPanel.numLines.value', { numLines })}</span>
           <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>4</span>
             <span>20</span>
@@ -239,9 +243,9 @@ export default function ControlPanel({
         {/* Style Toggle */}
         <div className="space-y-3">
           <fieldset>
-            <legend className="text-sm font-medium text-foreground mb-2">Gedicht Stijl</legend>
+            <legend className="text-sm font-medium text-foreground mb-2">{t('controlPanel.style.label')}</legend>
             <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="style-legend">
-              <span id="style-legend" className="sr-only">Gedicht stijl selectie</span>
+              <span id="style-legend" className="sr-only">{t('controlPanel.style.label')}</span>
               <button
                 onClick={() => onStyleToggle(true)}
                 onKeyDown={(e) => {
@@ -251,16 +255,16 @@ export default function ControlPanel({
                     (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
                   }
                 }}
-                title="Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)"
+                title={t('controlPanel.style.classic.description')}
                 className={`p-3 rounded-lg border-2 font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   isClassic
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
                 }`}
                 aria-pressed={isClassic}
-                aria-label="Klassiek: Strikte structuur met groepen van 4 regels en AABB rijmstructuur"
+                aria-label={`${t('controlPanel.style.classic.label')}: ${t('controlPanel.style.classic.description')}`}
               >
-                Klassiek
+                {t('controlPanel.style.classic.label')}
               </button>
               <button
                 onClick={() => onStyleToggle(false)}
@@ -271,16 +275,16 @@ export default function ControlPanel({
                     (e.currentTarget.previousElementSibling as HTMLElement)?.focus();
                   }
                 }}
-                title="Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
+                title={t('controlPanel.style.free.description')}
                 className={`p-3 rounded-lg border-2 font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   !isClassic
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                     : 'bg-background text-foreground border-border hover:border-primary/50 hover:bg-accent/50'
                 }`}
                 aria-pressed={!isClassic}
-                aria-label="Vrij Stromend: Variabele regelgroepen met flexibele of optionele rijm"
+                aria-label={`${t('controlPanel.style.free.label')}: ${t('controlPanel.style.free.description')}`}
               >
-                Vrij Stromend
+                {t('controlPanel.style.free.label')}
               </button>
             </div>
           </fieldset>
@@ -289,11 +293,11 @@ export default function ControlPanel({
         {/* AI Mode Selection */}
         <div className="space-y-3">
           <fieldset>
-            <legend className="text-sm font-medium text-foreground mb-2">AI Modus</legend>
+            <legend className="text-sm font-medium text-foreground mb-2">{t('controlPanel.aiMode.label')}</legend>
             <div className="space-y-2.5" role="radiogroup" aria-labelledby="ai-mode-legend">
-              <span id="ai-mode-legend" className="sr-only">AI modus selectie</span>
+              <span id="ai-mode-legend" className="sr-only">{t('controlPanel.aiMode.label')}</span>
               <label
-                title="Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+                title={t('controlPanel.aiMode.fullyAi.description')}
                 className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <input
@@ -303,12 +307,12 @@ export default function ControlPanel({
                   checked={!isHumanize}
                   onChange={() => onHumanizeToggle(false)}
                   className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
-                  aria-label="Fully AI: Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+                  aria-label={`${t('controlPanel.aiMode.fullyAi.label')}: ${t('controlPanel.aiMode.fullyAi.description')}`}
                 />
-                <span className="text-sm text-foreground font-medium">Fully AI</span>
+                <span className="text-sm text-foreground font-medium">{t('controlPanel.aiMode.fullyAi.label')}</span>
               </label>
               <label
-                title="Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+                title={t('controlPanel.aiMode.humanize.description')}
                 className="flex items-center gap-2.5 cursor-pointer p-2 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <input
@@ -318,9 +322,9 @@ export default function ControlPanel({
                   checked={isHumanize}
                   onChange={() => onHumanizeToggle(true)}
                   className="w-4 h-4 text-primary border-2 border-border focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer accent-primary"
-                  aria-label="Humanize: Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+                  aria-label={`${t('controlPanel.aiMode.humanize.label')}: ${t('controlPanel.aiMode.humanize.description')}`}
                 />
-                <span className="text-sm text-foreground font-medium">Humanize</span>
+                <span className="text-sm text-foreground font-medium">{t('controlPanel.aiMode.humanize.label')}</span>
               </label>
             </div>
           </fieldset>
@@ -330,7 +334,7 @@ export default function ControlPanel({
             <div className="space-y-3 pl-6 pt-2 border-l-2 border-primary/20">
               <div className="space-y-2">
                 <label id="author-age-label" htmlFor="author-age" className="text-xs sm:text-sm font-medium text-foreground">
-                  Leeftijd schrijver{isHumanize && <span className="text-destructive ml-1" aria-label="verplicht veld">*</span>}
+                  {t('controlPanel.authorAge.label')}{isHumanize && <span className="text-destructive ml-1" aria-label={t('controlPanel.recipientName.required')}>*</span>}
                 </label>
                 <input
                   id="author-age"
@@ -355,7 +359,7 @@ export default function ControlPanel({
                     
                     onAuthorAgeChange(newAge);
                   }}
-                  placeholder="Bijv. 12"
+                  placeholder={t('controlPanel.authorAge.placeholder')}
                   className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
                   aria-labelledby="author-age-label"
                   aria-required={isHumanize}
@@ -363,7 +367,7 @@ export default function ControlPanel({
               </div>
               <div className="space-y-2">
                 <label id="author-gender-label" htmlFor="author-gender" className="text-xs sm:text-sm font-medium text-foreground">
-                  Geslacht schrijver{isHumanize && <span className="text-destructive ml-1" aria-label="verplicht veld">*</span>}
+                  {t('controlPanel.authorGender.label')}{isHumanize && <span className="text-destructive ml-1" aria-label={t('controlPanel.recipientName.required')}>*</span>}
                 </label>
                 <select
                   id="author-gender"
@@ -373,16 +377,16 @@ export default function ControlPanel({
                   aria-labelledby="author-gender-label"
                   aria-required={isHumanize}
                 >
-                  <option value="">Selecteer...</option>
+                  <option value="">{t('controlPanel.authorGender.select')}</option>
                   {authorAge && Number.parseInt(authorAge) >= 18 ? (
                     <>
-                      <option value="man">Man</option>
-                      <option value="vrouw">Vrouw</option>
+                      <option value="man">{t('controlPanel.authorGender.options.man')}</option>
+                      <option value="vrouw">{t('controlPanel.authorGender.options.vrouw')}</option>
                     </>
                   ) : (
                     <>
-                      <option value="jongen">Jongen</option>
-                      <option value="meisje">Meisje</option>
+                      <option value="jongen">{t('controlPanel.authorGender.options.jongen')}</option>
+                      <option value="meisje">{t('controlPanel.authorGender.options.meisje')}</option>
                     </>
                   )}
                 </select>
@@ -395,7 +399,7 @@ export default function ControlPanel({
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <label id="friendliness-label" htmlFor="friendliness" className="text-sm font-medium text-foreground">
-              Vriendelijkheid
+              {t('controlPanel.friendliness.label')}
             </label>
             <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full">
               {getFriendlinessLabel()}
@@ -412,10 +416,10 @@ export default function ControlPanel({
             aria-labelledby="friendliness-label"
             aria-describedby="friendliness-value"
           />
-          <span id="friendliness-value" className="sr-only">Huidige waarde: {getFriendlinessLabel()}</span>
+          <span id="friendliness-value" className="sr-only">{t('controlPanel.friendliness.label')}: {getFriendlinessLabel()}</span>
           <div className="flex justify-between text-xs text-muted-foreground px-1">
-            <span>Spicy</span>
-            <span>Vriendelijk</span>
+            <span>{t('controlPanel.friendliness.scale.min')}</span>
+            <span>{t('controlPanel.friendliness.scale.max')}</span>
           </div>
         </div>
 
@@ -431,24 +435,24 @@ export default function ControlPanel({
           {isLoading ? (
             <span className="flex items-center gap-2">
               <span className="animate-spin" aria-hidden="true">⏳</span>
-              <span>Aan het genereren...</span>
+              <span>{t('controlPanel.generateButton.loading')}</span>
             </span>
           ) : (
             <span className="flex items-center gap-2">
               <span aria-hidden="true">✨</span>
-              <span>Genereer Gedicht</span>
+              <span>{t('controlPanel.generateButton.text')}</span>
             </span>
           )}
         </Button>
 
         {/* Info Box */}
-        <div className="bg-muted/50 border border-border rounded-lg p-3.5 space-y-1.5" role="note" aria-label="Tip">
+        <div className="bg-muted/50 border border-border rounded-lg p-3.5 space-y-1.5" role="note" aria-label={t('controlPanel.tip.title')}>
           <p className="text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
             <span aria-hidden="true">💡</span>
-            <span>Tip</span>
+            <span>{t('controlPanel.tip.title')}</span>
           </p>
           <p className="text-xs sm:text-sm text-foreground/70 leading-relaxed">
-            Lagere vriendelijkheid geeft scherpere grappen, hogere geeft meer aardige complimenten.
+            {t('controlPanel.tip.text')}
           </p>
         </div>
       </div>

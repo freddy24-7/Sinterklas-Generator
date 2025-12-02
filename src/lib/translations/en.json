@@ -1,0 +1,192 @@
+{
+  "hero": {
+    "welcome": "Welcome to the Sinterklaas Celebration",
+    "title": "Sinterklaas Poems",
+    "description": "Generate personal and funny Sinterklaas poems for your friends and family. Choose your style and set the friendliness."
+  },
+  "controlPanel": {
+    "title": "Start here",
+    "recipientName": {
+      "label": "Recipient name",
+      "placeholder": "E.g. John",
+      "description": "Enter the name of the person you want to make the poem for. This field is required.",
+      "required": "required field"
+    },
+    "recipientFacts": {
+      "label": "Facts you want to include about the recipient",
+      "placeholder": "E.g. Loves coffee, plays guitar, works as a teacher..."
+    },
+    "numLines": {
+      "label": "Number of Lines",
+      "value": "Current value: {numLines} lines"
+    },
+    "style": {
+      "label": "Poem Style",
+      "classic": {
+        "label": "Classic",
+        "description": "Strict structure with groups of 4 lines and AABB rhyme structure (e.g. 4+4+4 for 12 lines)"
+      },
+      "free": {
+        "label": "Free Flowing",
+        "description": "Variable line groups (e.g. 2+3+7) with flexible or optional rhyme"
+      }
+    },
+    "aiMode": {
+      "label": "AI Mode",
+      "fullyAi": {
+        "label": "Fully AI",
+        "description": "The poem is generated without human mistakes - perfect and polished"
+      },
+      "humanize": {
+        "label": "Humanize",
+        "description": "The poem contains 2-3 subtle mistakes typical for the age and gender of the writer"
+      }
+    },
+    "authorAge": {
+      "label": "Author age",
+      "placeholder": "E.g. 12"
+    },
+    "authorGender": {
+      "label": "Author gender",
+      "select": "Select...",
+      "options": {
+        "man": "Man",
+        "vrouw": "Woman",
+        "jongen": "Boy",
+        "meisje": "Girl"
+      }
+    },
+    "friendliness": {
+      "label": "Friendliness",
+      "labels": {
+        "spicy": "Spicy 🌶️",
+        "funny": "Funny 😄",
+        "normal": "Normal 😊",
+        "veryFriendly": "Very Friendly 🥰"
+      },
+      "scale": {
+        "min": "Spicy",
+        "max": "Friendly"
+      }
+    },
+    "generateButton": {
+      "text": "Generate Poem",
+      "loading": "Generating..."
+    },
+    "tip": {
+      "title": "Tip",
+      "text": "Lower friendliness gives sharper jokes, higher gives more kind compliments."
+    }
+  },
+  "poemGenerator": {
+    "errors": {
+      "noRecipientName": "Please enter the recipient's name",
+      "noAuthorAge": "Please enter the author's age",
+      "noAuthorGender": "Please select the author's gender",
+      "rateLimit": "Too many requests. Please wait a moment and try again.",
+      "generic": "An error occurred",
+      "noPoem": "No poem received from server",
+      "unknown": "An unknown error occurred"
+    },
+    "loading": {
+      "title": "Generating poem...",
+      "subtitle": "This may take a while"
+    },
+    "empty": {
+      "title": "Nothing generated yet",
+      "description": "Enter the recipient's name and click \"Generate Poem\" to start"
+    },
+    "actions": {
+      "copy": "Copy",
+      "print": "Print",
+      "pdf": "PDF",
+      "clear": "Clear",
+      "ariaLabels": {
+        "copy": "Copy poem to clipboard",
+        "print": "Print poem",
+        "pdf": "Download poem as PDF",
+        "clear": "Clear generated poem"
+      }
+    }
+  },
+  "header": {
+    "title": "Sinterklaas Poems",
+    "infoButton": "Info",
+    "infoAriaLabel": "Show instructions for using the Sinterklaas poem generator",
+    "instructions": {
+      "title": "How to use",
+      "description": "Learn how to use the Sinterklaas poem generator",
+      "sections": {
+        "language": {
+          "title": "1. Language selection",
+          "infoText": "At the top of the page you'll find two language selectors:",
+          "infoDescription": "\"I want info in:\" - Choose the language in which you want to see the instructions and interface. This changes all texts on the website (labels, buttons, etc.) to the selected language.",
+          "poemDescription": "\"I want my poem in:\" - Choose the language in which your poem should be generated. The generated poem will be in this language, independent of the interface language."
+        },
+        "recipientName": {
+          "title": "2. Recipient name",
+          "text": "Enter the name of the person you want to make the poem for. This field is required."
+        },
+        "recipientFacts": {
+          "title": "3. Facts about the recipient",
+          "text": "Optional: Add personal facts you want to include in the poem, such as hobbies, interests, or funny anecdotes."
+        },
+        "numLines": {
+          "title": "4. Number of lines",
+          "text": "Choose between 4 and 20 lines for your poem. Use the slider to adjust the number."
+        },
+        "style": {
+          "title": "5. Poem style",
+          "classic": "Classic: Strict structure with groups of 4 lines and AABB rhyme structure (e.g. 4+4+4 for 12 lines)",
+          "free": "Free Flowing: Variable line groups (e.g. 2+3+7) with flexible or optional rhyme"
+        },
+        "aiMode": {
+          "title": "6. AI Mode",
+          "intro": "Choose between two modes:",
+          "fullyAi": "Fully AI: The poem is generated without human mistakes - perfect and polished.",
+          "humanize": "Humanize: The poem contains 2-3 subtle mistakes typical for the age and gender of the writer. Enter the age and gender to get an authentic handwritten feel."
+        },
+        "friendliness": {
+          "title": "7. Friendliness",
+          "intro": "Adjust the tone of your poem:",
+          "spicy": "Spicy (0-39): Funny and sharp with a touch of humor",
+          "normal": "Normal (40-69): Neutral and balanced",
+          "friendly": "Friendly (70-100): Very friendly and positive"
+        },
+        "generate": {
+          "title": "8. Generate and download",
+          "text": "Click \"Generate Poem\" to create your personal Sinterklaas poem. You can copy, print, or download the poem as PDF."
+        }
+      },
+      "tip": "💡 Tip: All poems start with \"Madrid, December 5th\" and end with \"Sint and Piet\""
+    }
+  },
+  "footer": {
+    "description": "Generate personal Sinterklaas poems",
+    "copyright": "© {year} Sinterklaas Poem Generator",
+    "madeWith": "Made with ❤️ for Sinterklaas",
+    "contact": "Contact"
+  },
+  "contactForm": {
+    "title": "Contact Us",
+    "description": "Send us a message and we'll get back to you soon.",
+    "emailLabel": "Your Email",
+    "emailPlaceholder": "your.email@example.com",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Your message here...",
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "success": "Message sent successfully! We'll get back to you soon.",
+    "error": "Failed to send message. Please try again later."
+  },
+  "language": {
+    "label": "Language",
+    "infoLabel": "I want info in:",
+    "poemLabel": "I want my poem in:",
+    "dutch": "Nederlands",
+    "english": "English",
+    "moroccan": "العربية",
+    "turkish": "Türkçe"
+  }
+}
+

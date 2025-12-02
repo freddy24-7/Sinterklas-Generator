@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ControlPanel from './control-panel';
+import { useLanguage } from '@/lib/language-context';
 
 export default function PoemGenerator() {
   const [numLines, setNumLines] = useState(8);
@@ -17,6 +18,7 @@ export default function PoemGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPoem, setGeneratedPoem] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { t, poemLanguage } = useLanguage();
 
   const handleDownloadPDF = async () => {
     if (!generatedPoem) return;
@@ -142,18 +144,18 @@ export default function PoemGenerator() {
 
     // Validate recipient name
     if (!recipientName || recipientName.trim() === '') {
-      setError('Vul alsjeblieft de naam van de ontvanger in');
+      setError(t('poemGenerator.errors.noRecipientName'));
       return;
     }
 
     // Validate humanize fields if humanize is enabled
     if (isHumanize) {
       if (!authorAge || authorAge.trim() === '') {
-        setError('Vul alsjeblieft de leeftijd van de schrijver in');
+        setError(t('poemGenerator.errors.noAuthorAge'));
         return;
       }
       if (!authorGender || authorGender.trim() === '') {
-        setError('Selecteer alsjeblieft het geslacht van de schrijver');
+        setError(t('poemGenerator.errors.noAuthorGender'));
         return;
       }
     }
@@ -177,6 +179,7 @@ export default function PoemGenerator() {
           isHumanize,
           authorAge: isHumanize ? authorAge.trim() : '',
           authorGender: isHumanize ? authorGender.trim() : '',
+          poemLanguage,
         }),
       });
 
@@ -185,19 +188,19 @@ export default function PoemGenerator() {
       if (!response.ok) {
         // Handle 429 rate limit errors specifically
         if (response.status === 429) {
-          throw new Error('Te veel verzoeken. Wacht even en probeer het opnieuw.');
+          throw new Error(t('poemGenerator.errors.rateLimit'));
         }
-        throw new Error(data.error || 'Er is een fout opgetreden');
+        throw new Error(data.error || t('poemGenerator.errors.generic'));
       }
 
       if (data.poem) {
         setGeneratedPoem(data.poem);
       } else {
-        throw new Error('Geen gedicht ontvangen van de server');
+        throw new Error(t('poemGenerator.errors.noPoem'));
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Er is een onbekende fout opgetreden';
+        err instanceof Error ? err.message : t('poemGenerator.errors.unknown');
       setError(errorMessage);
       console.error('Error generating poem:', err);
     } finally {
@@ -236,7 +239,7 @@ export default function PoemGenerator() {
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-card border shadow-sm">
             {generatedPoem && (
-              <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden" role="toolbar" aria-label="Gedicht acties">
+              <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden" role="toolbar" aria-label={t('poemGenerator.actions.copy')}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -244,30 +247,30 @@ export default function PoemGenerator() {
                     navigator.clipboard.writeText(generatedPoem);
                   }}
                   className="text-xs sm:text-sm flex-shrink-0"
-                  aria-label="Kopieer gedicht naar klembord"
+                  aria-label={t('poemGenerator.actions.ariaLabels.copy')}
                 >
                   <span aria-hidden="true">📋</span>
-                  <span className="ml-1">Kopiëren</span>
+                  <span className="ml-1">{t('poemGenerator.actions.copy')}</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePrint}
                   className="text-xs sm:text-sm flex-shrink-0"
-                  aria-label="Print gedicht"
+                  aria-label={t('poemGenerator.actions.ariaLabels.print')}
                 >
                   <span aria-hidden="true">🖨️</span>
-                  <span className="ml-1">Print</span>
+                  <span className="ml-1">{t('poemGenerator.actions.print')}</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDownloadPDF}
                   className="text-xs sm:text-sm flex-shrink-0"
-                  aria-label="Download gedicht als PDF"
+                  aria-label={t('poemGenerator.actions.ariaLabels.pdf')}
                 >
                   <span aria-hidden="true">📄</span>
-                  <span className="ml-1">PDF</span>
+                  <span className="ml-1">{t('poemGenerator.actions.pdf')}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -277,10 +280,10 @@ export default function PoemGenerator() {
                     setError(null);
                   }}
                   className="text-xs sm:text-sm flex-shrink-0"
-                  aria-label="Wis gegenereerd gedicht"
+                  aria-label={t('poemGenerator.actions.ariaLabels.clear')}
                 >
                   <span aria-hidden="true">🔄</span>
-                  <span className="ml-1">Wissen</span>
+                  <span className="ml-1">{t('poemGenerator.actions.clear')}</span>
                 </Button>
               </div>
             )}
@@ -303,15 +306,15 @@ export default function PoemGenerator() {
                 className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4"
                 role="status"
                 aria-live="polite"
-                aria-label="Gedicht wordt gegenereerd"
+                aria-label={t('poemGenerator.loading.title')}
               >
                 <div className="space-y-4">
                   <div className="text-3xl sm:text-4xl animate-pulse" aria-hidden="true">⏳</div>
                   <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
-                    Gedicht wordt gegenereerd...
+                    {t('poemGenerator.loading.title')}
                   </p>
                   <p className="text-xs sm:text-sm text-foreground/70">
-                    Dit kan even duren
+                    {t('poemGenerator.loading.subtitle')}
                   </p>
                 </div>
               </div>
@@ -339,10 +342,10 @@ export default function PoemGenerator() {
                 <div className="space-y-3 max-w-sm">
                   <div className="text-3xl sm:text-4xl mb-4">✨</div>
                   <p className="text-base sm:text-lg lg:text-xl text-foreground/80 font-medium">
-                    Nog niets gegenereerd
+                    {t('poemGenerator.empty.title')}
                   </p>
                   <p className="text-xs sm:text-sm text-foreground/70">
-                    Vul de naam van de ontvanger in en klik op "Genereer Gedicht" om te beginnen
+                    {t('poemGenerator.empty.description')}
                   </p>
                 </div>
               </div>

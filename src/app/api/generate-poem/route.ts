@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       isHumanize,
       authorAge,
       authorGender,
+      poemLanguage = 'nl', // Default to Dutch
     } = body;
 
     // Validate required fields
@@ -98,12 +99,22 @@ export async function POST(request: NextRequest) {
       return `\n\nBELANGRIJK - HUMANIZE MODUS:\nHet gedicht wordt geschreven door een ${age}-jarige ${genderLabel} en moet daarom authentiek klinken:\n${twirks}\n- De foutjes moeten subtiel en natuurlijk zijn - niet te opvallend\n- Het gedicht moet nog steeds leesbaar en begrijpelijk zijn`;
     };
 
+    // Map poem language codes to language names
+    const languageMap: Record<string, string> = {
+      nl: 'Nederlands',
+      en: 'English',
+      ar: 'Arabic',
+      tr: 'Turkish',
+    };
+    
+    const poemLangName = languageMap[poemLanguage] || 'Nederlands';
+    
     // Build the prompt with different instructions for classic vs free-flowing
     let prompt = '';
     
     if (isClassic) {
       // Classic style: strict 4+4+4 pattern
-      prompt = `Schrijf een klassiek Sinterklaas gedicht in het Nederlands voor ${recipientName}.
+      prompt = `Schrijf een klassiek Sinterklaas gedicht in het ${poemLangName} voor ${recipientName}.
 
 Belangrijke instructies voor klassieke stijl:
 - Het gedicht moet precies ${numLines} regels bevatten
@@ -127,7 +138,7 @@ ${
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     } else {
       // Free-flowing style: variable line groupings, less strict rhyming
-      prompt = `Schrijf een vrij stromend Sinterklaas gedicht in het Nederlands voor ${recipientName}.
+      prompt = `Schrijf een vrij stromend Sinterklaas gedicht in het ${poemLangName} voor ${recipientName}.
 
 Belangrijke instructies voor vrije stromende stijl:
 - Het gedicht moet ongeveer ${numLines} regels bevatten (mag iets afwijken)
@@ -153,7 +164,7 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     }
 
     // Generate the poem using the Gemini utility
-    const poem = await getGeminiResponse(prompt, 'nl');
+    const poem = await getGeminiResponse(prompt, poemLanguage);
 
     // Clean up the poem (remove any markdown formatting if present)
     let cleanedPoem = poem

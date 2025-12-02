@@ -10,9 +10,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useLanguage } from '@/lib/language-context';
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { language, setLanguage, poemLanguage, setPoemLanguage, t } = useLanguage();
 
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50" role="banner">
@@ -20,7 +22,112 @@ export default function Header() {
         <div className="flex h-14 sm:h-16 items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-shrink">
             <span className="text-lg sm:text-xl font-bold text-primary flex-shrink-0" aria-hidden="true">🎁</span>
-            <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">Sinterklaas Gedichten</h1>
+            <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground truncate">{t('header.title')}</h1>
+          </div>
+
+          {/* Language Selectors */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* UI Language Selector */}
+            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
+              <label className="text-[10px] sm:text-xs text-foreground/70 whitespace-nowrap">{t('language.infoLabel')}</label>
+              <div className="flex gap-0.5 sm:gap-1 bg-muted/50 border border-border rounded-md p-0.5 sm:p-1">
+                <button
+                  onClick={() => setLanguage('nl')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    language === 'nl'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.infoLabel')} ${t('language.dutch')}`}
+                >
+                  NL
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    language === 'en'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.infoLabel')} ${t('language.english')}`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => setLanguage('ar')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    language === 'ar'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.infoLabel')} ${t('language.moroccan')}`}
+                >
+                  AR
+                </button>
+                <button
+                  onClick={() => setLanguage('tr')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    language === 'tr'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.infoLabel')} ${t('language.turkish')}`}
+                >
+                  TR
+                </button>
+              </div>
+            </div>
+
+            {/* Poem Language Selector */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <label className="text-[10px] sm:text-xs text-foreground/70 whitespace-nowrap">{t('language.poemLabel')}</label>
+              <div className="flex gap-0.5 sm:gap-1 bg-muted/50 border border-border rounded-md p-0.5 sm:p-1">
+                <button
+                  onClick={() => setPoemLanguage('nl')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    poemLanguage === 'nl'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.poemLabel')} ${t('language.dutch')}`}
+                >
+                  NL
+                </button>
+                <button
+                  onClick={() => setPoemLanguage('en')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    poemLanguage === 'en'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.poemLabel')} ${t('language.english')}`}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => setPoemLanguage('ar')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    poemLanguage === 'ar'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.poemLabel')} ${t('language.moroccan')}`}
+                >
+                  AR
+                </button>
+                <button
+                  onClick={() => setPoemLanguage('tr')}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded transition-colors ${
+                    poemLanguage === 'tr'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                  aria-label={`${t('language.poemLabel')} ${t('language.turkish')}`}
+                >
+                  TR
+                </button>
+              </div>
+            </div>
           </div>
 
           <Dialog open={open} onOpenChange={setOpen}>
@@ -29,78 +136,98 @@ export default function Header() {
                 variant="default"
                 size="sm"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm flex-shrink-0 whitespace-nowrap shadow-sm"
-                aria-label="Toon instructies voor gebruik van de Sinterklaas gedichten generator"
+                aria-label={t('header.infoAriaLabel')}
               >
                 <span aria-hidden="true">ℹ️</span>
-                <span className="sr-only">Info</span>
-                <span className="ml-1">Info</span>
+                <span className="sr-only">{t('header.infoButton')}</span>
+                <span className="ml-1">{t('header.infoButton')}</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Hoe te gebruiken</DialogTitle>
+                <DialogTitle>{t('header.instructions.title')}</DialogTitle>
                 <DialogDescription>
-                  Leer hoe je de Sinterklaas gedicht generator gebruikt
+                  {t('header.instructions.description')}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">1. Naam ontvanger</h3>
-                  <p className="text-sm text-foreground/70">
-                    Vul de naam in van de persoon voor wie je het gedicht wilt maken. Dit veld is verplicht.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">2. Feiten over de ontvanger</h3>
-                  <p className="text-sm text-foreground/70">
-                    Optioneel: Voeg persoonlijke feiten toe die je in het gedicht wilt verwerken, zoals hobby's,
-                    interesses, of grappige anekdotes.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">3. Aantal regels</h3>
-                  <p className="text-sm text-foreground/70">
-                    Kies tussen 4 en 20 regels voor je gedicht. Gebruik de slider om het aantal aan te passen.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">4. Gedicht stijl</h3>
-                  <ul className="text-sm text-foreground/70 space-y-1 list-disc list-inside">
-                    <li>
-                      <strong>Klassiek:</strong> Strikte structuur met groepen van 4 regels en AABB rijmstructuur
-                      (bijvoorbeeld 4+4+4 voor 12 regels)
-                    </li>
-                    <li>
-                      <strong>Vrij Stromend:</strong> Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of
-                      optionele rijm
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">5. AI Modus</h3>
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.language.title')}</h3>
                   <p className="text-sm text-foreground/70 mb-2">
-                    Kies tussen twee modi:
+                    {t('header.instructions.sections.language.infoText')}
                   </p>
-                  <div className="space-y-3 pl-0">
+                  <div className="space-y-2 pl-0">
                     <div className="flex items-start gap-2.5">
                       <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-foreground">Fully AI:</span>
-                        <span className="text-sm text-foreground/70"> Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst.</span>
+                        <p className="text-sm text-foreground/70">
+                          {t('header.instructions.sections.language.infoDescription')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2.5">
                       <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
                       <div className="flex-1 min-w-0">
-                        <span className="font-semibold text-foreground">Humanize:</span>
+                        <p className="text-sm text-foreground/70">
+                          {t('header.instructions.sections.language.poemDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.recipientName.title')}</h3>
+                  <p className="text-sm text-foreground/70">
+                    {t('header.instructions.sections.recipientName.text')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.recipientFacts.title')}</h3>
+                  <p className="text-sm text-foreground/70">
+                    {t('header.instructions.sections.recipientFacts.text')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.numLines.title')}</h3>
+                  <p className="text-sm text-foreground/70">
+                    {t('header.instructions.sections.numLines.text')}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.style.title')}</h3>
+                  <ul className="text-sm text-foreground/70 space-y-1 list-disc list-inside">
+                    <li>
+                      <strong>{t('controlPanel.style.classic.label')}:</strong> {t('header.instructions.sections.style.classic')}
+                    </li>
+                    <li>
+                      <strong>{t('controlPanel.style.free.label')}:</strong> {t('header.instructions.sections.style.free')}
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.aiMode.title')}</h3>
+                  <p className="text-sm text-foreground/70 mb-2">
+                    {t('header.instructions.sections.aiMode.intro')}
+                  </p>
+                  <div className="space-y-3 pl-0">
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-foreground">{t('controlPanel.aiMode.fullyAi.label')}:</span>
+                        <span className="text-sm text-foreground/70"> {t('header.instructions.sections.aiMode.fullyAi')}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-primary font-bold mt-0.5 flex-shrink-0">•</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-foreground">{t('controlPanel.aiMode.humanize.label')}:</span>
                         <span className="text-sm text-foreground/70">
-                          {' '}Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de
-                          schrijver. Vul de leeftijd en het geslacht in om een authentiek handgeschreven gevoel te
-                          krijgen.
+                          {' '}{t('header.instructions.sections.aiMode.humanize')}
                         </span>
                       </div>
                     </div>
@@ -108,34 +235,33 @@ export default function Header() {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">6. Vriendelijkheid</h3>
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.friendliness.title')}</h3>
                   <p className="text-sm text-foreground/70">
-                    Pas de toon aan van je gedicht:
+                    {t('header.instructions.sections.friendliness.intro')}
                   </p>
                   <ul className="text-sm text-foreground/70 space-y-1 list-disc list-inside">
                     <li>
-                      <strong>Spicy (0-39):</strong> Grappig en scherp met een vleugje humor
+                      <strong>{t('header.instructions.sections.friendliness.spicy')}</strong>
                     </li>
                     <li>
-                      <strong>Normaal (40-69):</strong> Neutraal en gebalanceerd
+                      <strong>{t('header.instructions.sections.friendliness.normal')}</strong>
                     </li>
                     <li>
-                      <strong>Vriendelijk (70-100):</strong> Heel vriendelijk en positief
+                      <strong>{t('header.instructions.sections.friendliness.friendly')}</strong>
                     </li>
                   </ul>
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-foreground">7. Genereer en download</h3>
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.generate.title')}</h3>
                   <p className="text-sm text-foreground/70">
-                    Klik op "Genereer Gedicht" om je persoonlijke Sinterklaas gedicht te maken. Je kunt het gedicht
-                    kopiëren, printen of downloaden als PDF.
+                    {t('header.instructions.sections.generate.text')}
                   </p>
                 </div>
 
                 <div className="pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground">
-                    💡 Tip: Alle gedichten beginnen met "Madrid, 5 december" en eindigen met "Sint en Piet"
+                    {t('header.instructions.tip')}
                   </p>
                 </div>
               </div>

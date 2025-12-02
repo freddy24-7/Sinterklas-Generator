@@ -1,0 +1,192 @@
+{
+  "hero": {
+    "welcome": "Welkom bij het Sinterklaas Feest",
+    "title": "Sinterklaas Gedichten",
+    "description": "Genereer persoonlijke en grappige Sinterklaas gedichten voor je vrienden en familie. Kies je stijl en bepaal de vriendelijkheid."
+  },
+  "controlPanel": {
+    "title": "Start hier",
+    "recipientName": {
+      "label": "Naam ontvanger",
+      "placeholder": "Bijv. Jan",
+      "description": "Vul de naam in van de persoon voor wie je het gedicht wilt maken. Dit veld is verplicht.",
+      "required": "verplicht veld"
+    },
+    "recipientFacts": {
+      "label": "Feiten die je wil meegeven over de ontvanger",
+      "placeholder": "Bijv. Houdt van koffie, speelt gitaar, werkt als leraar..."
+    },
+    "numLines": {
+      "label": "Aantal Regels",
+      "value": "Huidige waarde: {numLines} regels"
+    },
+    "style": {
+      "label": "Gedicht Stijl",
+      "classic": {
+        "label": "Klassiek",
+        "description": "Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)"
+      },
+      "free": {
+        "label": "Vrij Stromend",
+        "description": "Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
+      }
+    },
+    "aiMode": {
+      "label": "AI Modus",
+      "fullyAi": {
+        "label": "Fully AI",
+        "description": "Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst"
+      },
+      "humanize": {
+        "label": "Humanize",
+        "description": "Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver"
+      }
+    },
+    "authorAge": {
+      "label": "Leeftijd schrijver",
+      "placeholder": "Bijv. 12"
+    },
+    "authorGender": {
+      "label": "Geslacht schrijver",
+      "select": "Selecteer...",
+      "options": {
+        "man": "Man",
+        "vrouw": "Vrouw",
+        "jongen": "Jongen",
+        "meisje": "Meisje"
+      }
+    },
+    "friendliness": {
+      "label": "Vriendelijkheid",
+      "labels": {
+        "spicy": "Spicy 🌶️",
+        "funny": "Grappig 😄",
+        "normal": "Normaal 😊",
+        "veryFriendly": "Heel Vriendelijk 🥰"
+      },
+      "scale": {
+        "min": "Spicy",
+        "max": "Vriendelijk"
+      }
+    },
+    "generateButton": {
+      "text": "Genereer Gedicht",
+      "loading": "Aan het genereren..."
+    },
+    "tip": {
+      "title": "Tip",
+      "text": "Lagere vriendelijkheid geeft scherpere grappen, hogere geeft meer aardige complimenten."
+    }
+  },
+  "poemGenerator": {
+    "errors": {
+      "noRecipientName": "Vul alsjeblieft de naam van de ontvanger in",
+      "noAuthorAge": "Vul alsjeblieft de leeftijd van de schrijver in",
+      "noAuthorGender": "Selecteer alsjeblieft het geslacht van de schrijver",
+      "rateLimit": "Te veel verzoeken. Wacht even en probeer het opnieuw.",
+      "generic": "Er is een fout opgetreden",
+      "noPoem": "Geen gedicht ontvangen van de server",
+      "unknown": "Er is een onbekende fout opgetreden"
+    },
+    "loading": {
+      "title": "Gedicht wordt gegenereerd...",
+      "subtitle": "Dit kan even duren"
+    },
+    "empty": {
+      "title": "Nog niets gegenereerd",
+      "description": "Vul de naam van de ontvanger in en klik op \"Genereer Gedicht\" om te beginnen"
+    },
+    "actions": {
+      "copy": "Kopiëren",
+      "print": "Print",
+      "pdf": "PDF",
+      "clear": "Wissen",
+      "ariaLabels": {
+        "copy": "Kopieer gedicht naar klembord",
+        "print": "Print gedicht",
+        "pdf": "Download gedicht als PDF",
+        "clear": "Wis gegenereerd gedicht"
+      }
+    }
+  },
+  "header": {
+    "title": "Sinterklaas Gedichten",
+    "infoButton": "Info",
+    "infoAriaLabel": "Toon instructies voor gebruik van de Sinterklaas gedichten generator",
+    "instructions": {
+      "title": "Hoe te gebruiken",
+      "description": "Leer hoe je de Sinterklaas gedicht generator gebruikt",
+      "sections": {
+        "language": {
+          "title": "1. Taal selectie",
+          "infoText": "Bovenaan de pagina vind je twee taal selectors:",
+          "infoDescription": "\"Ik wil info in:\" - Kies de taal waarin je de instructies en interface wilt zien. Dit verandert alle teksten op de website (labels, knoppen, etc.) naar de gekozen taal.",
+          "poemDescription": "\"Ik wil mijn gedicht in:\" - Kies de taal waarin je gedicht gegenereerd moet worden. Het gegenereerde gedicht zal in deze taal zijn, onafhankelijk van de interface taal."
+        },
+        "recipientName": {
+          "title": "2. Naam ontvanger",
+          "text": "Vul de naam in van de persoon voor wie je het gedicht wilt maken. Dit veld is verplicht."
+        },
+        "recipientFacts": {
+          "title": "3. Feiten over de ontvanger",
+          "text": "Optioneel: Voeg persoonlijke feiten toe die je in het gedicht wilt verwerken, zoals hobby's, interesses, of grappige anekdotes."
+        },
+        "numLines": {
+          "title": "4. Aantal regels",
+          "text": "Kies tussen 4 en 20 regels voor je gedicht. Gebruik de slider om het aantal aan te passen."
+        },
+        "style": {
+          "title": "5. Gedicht stijl",
+          "classic": "Klassiek: Strikte structuur met groepen van 4 regels en AABB rijmstructuur (bijvoorbeeld 4+4+4 voor 12 regels)",
+          "free": "Vrij Stromend: Variabele regelgroepen (bijvoorbeeld 2+3+7) met flexibele of optionele rijm"
+        },
+        "aiMode": {
+          "title": "6. AI Modus",
+          "intro": "Kies tussen twee modi:",
+          "fullyAi": "Fully AI: Het gedicht wordt gegenereerd zonder menselijke foutjes - perfect en gepolijst.",
+          "humanize": "Humanize: Het gedicht bevat 2-3 subtiele foutjes die typisch zijn voor de leeftijd en het geslacht van de schrijver. Vul de leeftijd en het geslacht in om een authentiek handgeschreven gevoel te krijgen."
+        },
+        "friendliness": {
+          "title": "7. Vriendelijkheid",
+          "intro": "Pas de toon aan van je gedicht:",
+          "spicy": "Spicy (0-39): Grappig en scherp met een vleugje humor",
+          "normal": "Normaal (40-69): Neutraal en gebalanceerd",
+          "friendly": "Vriendelijk (70-100): Heel vriendelijk en positief"
+        },
+        "generate": {
+          "title": "8. Genereer en download",
+          "text": "Klik op \"Genereer Gedicht\" om je persoonlijke Sinterklaas gedicht te maken. Je kunt het gedicht kopiëren, printen of downloaden als PDF."
+        }
+      },
+      "tip": "💡 Tip: Alle gedichten beginnen met \"Madrid, 5 december\" en eindigen met \"Sint en Piet\""
+    }
+  },
+  "footer": {
+    "description": "Genereer persoonlijke Sinterklaas gedichten",
+    "copyright": "© {year} Sinterklaas Gedichten Generator",
+    "madeWith": "Met ❤️ gemaakt voor Sinterklaas",
+    "contact": "Contact"
+  },
+  "contactForm": {
+    "title": "Contact",
+    "description": "Stuur ons een bericht en we nemen zo snel mogelijk contact met je op.",
+    "emailLabel": "Je e-mailadres",
+    "emailPlaceholder": "jouw.email@voorbeeld.nl",
+    "messageLabel": "Bericht",
+    "messagePlaceholder": "Je bericht hier...",
+    "submit": "Verstuur bericht",
+    "sending": "Verzenden...",
+    "success": "Bericht succesvol verzonden! We nemen zo snel mogelijk contact met je op.",
+    "error": "Het verzenden van het bericht is mislukt. Probeer het later opnieuw."
+  },
+  "language": {
+    "label": "Taal",
+    "infoLabel": "Ik wil info in:",
+    "poemLabel": "Ik wil mijn gedicht in:",
+    "dutch": "Nederlands",
+    "english": "English",
+    "moroccan": "العربية",
+    "turkish": "Türkçe"
+  }
+}
+
