@@ -156,6 +156,10 @@
         "generate": {
           "title": "8. Genereer en download",
           "text": "Klik op \"Genereer Gedicht\" om je persoonlijke Sinterklaas gedicht te maken. Je kunt het gedicht kopiëren, printen of downloaden als PDF."
+        },
+        "feedback": {
+          "title": "9. Feedback of suggesties?",
+          "text": "Heb je feedback of suggesties? Klik op de \"Contact\" knop onderaan de pagina om ons een bericht te sturen."
         }
       },
       "tip": "💡 Tip: Alle gedichten beginnen met \"Madrid, 5 december\" en eindigen met \"Sint en Piet\""

@@ -259,6 +259,13 @@ export default function Header() {
                   </p>
                 </div>
 
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">{t('header.instructions.sections.feedback.title')}</h3>
+                  <p className="text-sm text-foreground/70">
+                    {t('header.instructions.sections.feedback.text')}
+                  </p>
+                </div>
+
                 <div className="pt-4 border-t border-border">
                   <p className="text-xs text-muted-foreground">
                     {t('header.instructions.tip')}

@@ -156,6 +156,10 @@
         "generate": {
           "title": "8. Generate and download",
           "text": "Click \"Generate Poem\" to create your personal Sinterklaas poem. You can copy, print, or download the poem as PDF."
+        },
+        "feedback": {
+          "title": "9. Feedback or suggestions?",
+          "text": "Have feedback or suggestions? Click the \"Contact\" button at the bottom of the page to send us a message."
         }
       },
       "tip": "💡 Tip: All poems start with \"Madrid, December 5th\" and end with \"Sint and Piet\""

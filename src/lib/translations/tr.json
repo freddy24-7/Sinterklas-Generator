@@ -156,6 +156,10 @@
         "generate": {
           "title": "8. Oluştur ve indir",
           "text": "Kişisel Sinterklaas şiirinizi oluşturmak için \"Şiir Oluştur\"a tıklayın. Şiiri kopyalayabilir, yazdırabilir veya PDF olarak indirebilirsiniz."
+        },
+        "feedback": {
+          "title": "9. Geri bildirim veya öneriler?",
+          "text": "Geri bildirim veya önerileriniz mi var? Bize mesaj göndermek için sayfanın altındaki \"İletişim\" düğmesine tıklayın."
         }
       },
       "tip": "💡 İpucu: Tüm şiirler \"Madrid, 5 Aralık\" ile başlar ve \"Sint ve Piet\" ile biter"
