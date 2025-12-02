@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,7 +16,17 @@ import { useLanguage } from '@/lib/language-context';
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { language, setLanguage, poemLanguage, setPoemLanguage, t } = useLanguage();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50" role="banner">
@@ -49,7 +59,8 @@ export default function Header() {
                 </svg>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:hidden fixed right-0 top-0 h-full w-[85vw] max-w-sm translate-x-0 translate-y-0 rounded-none rounded-l-lg border-l border-t-0 border-b-0 border-r-0 p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right">
+            <DialogContent className="sm:hidden !fixed !right-0 !top-0 !left-auto !h-full !w-[85vw] !max-w-sm !translate-x-0 !translate-y-0 !rounded-none rounded-l-lg border-l border-t-0 border-b-0 border-r-0 p-0 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right !mx-0">
+              <DialogTitle className="sr-only">{t('header.title')}</DialogTitle>
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b">
                   <h2 className="text-lg font-semibold">{t('header.title')}</h2>
@@ -328,7 +339,7 @@ export default function Header() {
                 <span className="ml-1">{t('header.infoButton')}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto !mx-0 sm:mx-4 !w-[calc(100vw-2rem)] sm:!w-full !max-w-[calc(100vw-2rem)] sm:!max-w-lg !left-1/2 !-translate-x-1/2 sm:!left-[50%] sm:!-translate-x-1/2 !top-1/2 !-translate-y-1/2">
+            <DialogContent className="max-h-[85vh] sm:max-h-[80vh] overflow-y-auto sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>{t('header.instructions.title')}</DialogTitle>
                 <DialogDescription>
