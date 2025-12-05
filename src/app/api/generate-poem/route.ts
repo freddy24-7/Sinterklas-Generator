@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     // Build the prompt
     let prompt = '';
-
+    
     if (isClassic) {
       prompt = `Schrijf een klassiek Sinterklaas gedicht in het ${poemLangName} voor ${recipientName}.
 
@@ -296,6 +296,20 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
       prompt
     );
     
+    // Log summary for terminal visibility
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('📝 POEM GENERATED SUCCESSFULLY');
+    console.log('───────────────────────────────────────────────────────');
+    console.log(`   Model used:     ${modelUsed}`);
+    console.log(`   Fallback:       ${fallbackUsed ? `Yes (${fallbackReason})` : 'No'}`);
+    console.log(`   Recipient:      ${recipientName}`);
+    console.log(`   Style:          ${isClassic ? 'Classic' : 'Free-flowing'}`);
+    console.log(`   Lines:          ${numLines}`);
+    console.log(`   Language:       ${poemLanguage}`);
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('');
+    
     // Return the poem text with custom headers for fallback status
     return new Response(text, {
       status: 200,
@@ -323,8 +337,8 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     return new Response(
       JSON.stringify({
         error: error instanceof Error
-          ? error.message
-          : 'Er is een fout opgetreden bij het genereren van het gedicht',
+            ? error.message
+            : 'Er is een fout opgetreden bij het genereren van het gedicht',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
