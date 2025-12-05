@@ -25,7 +25,7 @@ export default function PoemGenerator() {
   // Ref for abort controller
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Clean up the poem text (filter problematic content)
+  // Clean up the poem text (filter problematic content and fix formatting)
   const cleanPoem = useCallback((text: string): string => {
     let cleaned = text
       .replace(/```[\s\S]*?```/g, '') // Remove code blocks
@@ -47,10 +47,26 @@ export default function PoemGenerator() {
     });
     cleaned = filteredLines.join('\n');
 
-    // Clean up spacing
-    cleaned = cleaned.replace(/\s{2,}/g, ' ');
-    cleaned = cleaned.replace(/\n\s+/g, '\n');
-    cleaned = cleaned.replace(/\s+\n/g, '\n');
+    // Clean up spacing (only horizontal spaces, preserve newlines)
+    cleaned = cleaned.replace(/[ \t]{2,}/g, ' '); // Multiple spaces/tabs to single space
+    cleaned = cleaned.replace(/[ \t]+\n/g, '\n'); // Spaces before newline
+    cleaned = cleaned.replace(/\n[ \t]+/g, '\n'); // Spaces after newline
+    
+    // Fix formatting: Ensure proper spacing around header and signature
+    // "Madrid, 5 december" should be followed by empty line
+    cleaned = cleaned.replace(
+      /^(Madrid,?\s*5\s*december)\s*/i,
+      'Madrid, 5 december\n\n'
+    );
+    
+    // "Sint en Piet" should be preceded by empty line
+    cleaned = cleaned.replace(
+      /\s*(Sint\s*en\s*Piet)\s*$/i,
+      '\n\nSint en Piet'
+    );
+    
+    // Normalize multiple newlines (max 2 for paragraph breaks)
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
     
     return cleaned.trim();
   }, []);
