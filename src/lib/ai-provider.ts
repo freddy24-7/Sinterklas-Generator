@@ -88,13 +88,39 @@ export function isUsingFreeModel(): boolean {
 export function isRateLimitError(error: unknown): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    return (
+    
+    // Check message for rate limit indicators
+    if (
       message.includes('rate') ||
       message.includes('429') ||
       message.includes('too many requests') ||
-      message.includes('temporarily rate-limited')
-    );
+      message.includes('temporarily rate-limited') ||
+      message.includes('empty response') // Empty response often means rate limited
+    ) {
+      return true;
+    }
+    
+    // Check if the error has a statusCode property (AI SDK errors)
+    const errorWithStatus = error as Error & { statusCode?: number };
+    if (errorWithStatus.statusCode === 429) {
+      return true;
+    }
+    
+    // Check nested cause for rate limit errors
+    const errorWithCause = error as Error & { cause?: unknown };
+    if (errorWithCause.cause) {
+      return isRateLimitError(errorWithCause.cause);
+    }
   }
+  
+  // Check if it's a plain object with error info
+  if (typeof error === 'object' && error !== null) {
+    const errorObj = error as Record<string, unknown>;
+    if (errorObj.statusCode === 429 || errorObj.status === 429) {
+      return true;
+    }
+  }
+  
   return false;
 }
 

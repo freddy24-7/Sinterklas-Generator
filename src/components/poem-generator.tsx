@@ -225,11 +225,25 @@ export default function PoemGenerator() {
         });
       }
 
-      // Get the full poem text
-      const poemText = await response.text();
-      setCompletion(poemText);
+      // Stream the response chunk by chunk
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let fullText = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+        setCompletion(fullText);
+      }
       
-      // Show success toast
+      // Show success toast when complete
       toast.success('Gedicht gegenereerd! 🎉', {
         duration: 2000,
       });
@@ -370,7 +384,7 @@ export default function PoemGenerator() {
               </div>
             )}
 
-            {/* Generated Poem */}
+            {/* Generated Poem (streams word by word) */}
             {displayedPoem && (
               <div 
                 className="space-y-4 max-h-[500px] overflow-y-auto" 
@@ -382,9 +396,13 @@ export default function PoemGenerator() {
                     className="text-foreground whitespace-pre-line leading-relaxed font-serif text-sm sm:text-base lg:text-lg xl:text-xl break-words"
                     role="article"
                     aria-live="polite"
-                    aria-atomic="true"
+                    aria-atomic="false"
                   >
                     {displayedPoem}
+                    {/* Streaming cursor indicator */}
+                    {isLoading && (
+                      <span className="inline-block w-2 h-5 bg-primary/60 animate-pulse ml-1 align-text-bottom" aria-hidden="true" />
+                    )}
                   </div>
                 </div>
               </div>

@@ -14,21 +14,21 @@ import {
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-// Result type for fallback tracking
-type GenerationResult = {
-  text: string;
+// Result type for streaming with fallback
+type StreamingResult = {
+  stream: ReadableStream<Uint8Array>;
   fallbackUsed: boolean;
   modelUsed: string;
   fallbackReason?: string;
 };
 
-// Try a single model and return the full text, or throw if it fails
-// We get the full response to ensure the model works before returning
-async function tryModel(
+// Try to start streaming from a model - validates by getting first chunk
+// Returns the stream with the first chunk already consumed (we'll prepend it)
+async function tryModelStream(
   provider: ReturnType<typeof getAIProvider> | ReturnType<typeof getDirectGeminiProvider>,
   modelId: string,
   prompt: string
-): Promise<string> {
+): Promise<{ textStream: AsyncIterable<string>; firstChunk: string }> {
   const result = streamText({
     model: provider!(modelId),
     prompt,
@@ -37,25 +37,67 @@ async function tryModel(
     maxRetries: 0,
   });
 
-  // Get the full text - this will throw if rate limited
-  // We sacrifice streaming to ensure reliable fallback
-  const text = await result.text;
+  const textStream = result.textStream;
+  const iterator = textStream[Symbol.asyncIterator]();
   
-  return text;
+  // Try to get the first chunk - this validates the model works
+  // The error might be thrown here if the model is rate limited
+  let firstResult;
+  try {
+    firstResult = await iterator.next();
+  } catch (error) {
+    // Re-throw with the original error - this allows fallback detection
+    throw error;
+  }
+  
+  if (firstResult.done) {
+    // Stream ended without any content - this can happen with rate limits
+    // Throw an error that can be detected as rate limit related
+    throw new Error('Model returned empty response (possibly rate limited)');
+  }
+  
+  const firstChunk = firstResult.value;
+  
+  // Create a new async iterable that yields the remaining chunks
+  const remainingStream = {
+    [Symbol.asyncIterator]: () => iterator,
+  };
+  
+  return { textStream: remainingStream, firstChunk };
 }
 
-// Generate with automatic fallback for free models
-async function generateWithFallback(
+// Create a streaming response with fallback support
+async function streamWithFallback(
   provider: ReturnType<typeof getAIProvider>,
   primaryModelId: string,
   prompt: string
-): Promise<GenerationResult> {
+): Promise<StreamingResult> {
+  const encoder = new TextEncoder();
+  
   // If using a paid model, just try once (no fallback)
   if (!isUsingFreeModel()) {
     console.log(`Using paid model: ${primaryModelId}`);
-    const text = await tryModel(provider, primaryModelId, prompt);
+    const { textStream, firstChunk } = await tryModelStream(provider, primaryModelId, prompt);
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Send the first chunk we already got
+          controller.enqueue(encoder.encode(firstChunk));
+          
+          // Stream the rest
+          for await (const chunk of textStream) {
+            controller.enqueue(encoder.encode(chunk));
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+    
     return {
-      text,
+      stream,
       fallbackUsed: false,
       modelUsed: primaryModelId,
     };
@@ -74,12 +116,30 @@ async function generateWithFallback(
   for (const modelId of modelsToTry) {
     try {
       console.log(`Trying model: ${modelId}`);
-      const text = await tryModel(provider, modelId, prompt);
+      const { textStream, firstChunk } = await tryModelStream(provider, modelId, prompt);
       
       console.log(`✓ Success with model: ${modelId}${fallbackCount > 0 ? ` (after ${fallbackCount} fallback(s))` : ''}`);
       
+      // Create the streaming response
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Send the first chunk we already got
+            controller.enqueue(encoder.encode(firstChunk));
+            
+            // Stream the rest
+            for await (const chunk of textStream) {
+              controller.enqueue(encoder.encode(chunk));
+            }
+            controller.close();
+          } catch (error) {
+            controller.error(error);
+          }
+        },
+      });
+      
       return {
-        text,
+        stream,
         fallbackUsed: fallbackCount > 0,
         modelUsed: modelId,
         fallbackReason: fallbackCount > 0 ? `${fallbackCount} model(s) were busy` : undefined,
@@ -106,12 +166,26 @@ async function generateWithFallback(
       
       const directGeminiProvider = getDirectGeminiProvider();
       if (directGeminiProvider) {
-        const text = await tryModel(directGeminiProvider, DIRECT_GEMINI_MODEL, prompt);
+        const { textStream, firstChunk } = await tryModelStream(directGeminiProvider, DIRECT_GEMINI_MODEL, prompt);
         
         console.log(`✓ Success with direct Gemini API (backup)`);
         
+        const stream = new ReadableStream({
+          async start(controller) {
+            try {
+              controller.enqueue(encoder.encode(firstChunk));
+              for await (const chunk of textStream) {
+                controller.enqueue(encoder.encode(chunk));
+              }
+              controller.close();
+            } catch (error) {
+              controller.error(error);
+            }
+          },
+        });
+        
         return {
-          text,
+          stream,
           fallbackUsed: true,
           modelUsed: 'direct-gemini',
           fallbackReason: 'All free models were busy, used backup',
@@ -289,8 +363,8 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     const provider = getAIProvider();
     const primaryModelId = getModelId();
 
-    // Generate with automatic fallback for free models
-    const { text, fallbackUsed, modelUsed, fallbackReason } = await generateWithFallback(
+    // Stream with automatic fallback for free models
+    const { stream, fallbackUsed, modelUsed, fallbackReason } = await streamWithFallback(
       provider,
       primaryModelId,
       prompt
@@ -299,7 +373,7 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     // Log summary for terminal visibility
     console.log('');
     console.log('═══════════════════════════════════════════════════════');
-    console.log('📝 POEM GENERATED SUCCESSFULLY');
+    console.log('📝 POEM GENERATION STARTED (STREAMING)');
     console.log('───────────────────────────────────────────────────────');
     console.log(`   Model used:     ${modelUsed}`);
     console.log(`   Fallback:       ${fallbackUsed ? `Yes (${fallbackReason})` : 'No'}`);
@@ -310,11 +384,12 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     console.log('═══════════════════════════════════════════════════════');
     console.log('');
     
-    // Return the poem text with custom headers for fallback status
-    return new Response(text, {
+    // Return the streaming response with custom headers for fallback status
+    return new Response(stream, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
         'X-Fallback-Used': fallbackUsed ? 'true' : 'false',
         'X-Model-Used': modelUsed,
         ...(fallbackReason ? { 'X-Fallback-Reason': fallbackReason } : {}),
