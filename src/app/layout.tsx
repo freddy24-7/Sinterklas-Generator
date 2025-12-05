@@ -2,6 +2,7 @@ import type React from 'react';
 import type { Metadata } from 'next';
 import { Playfair_Display, Geist } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from 'sonner';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { LanguageProvider } from '@/lib/language-context';
@@ -164,6 +165,16 @@ export default function RootLayout({
           </main>
           <Footer />
           <Analytics />
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              style: {
+                background: 'var(--card)',
+                color: 'var(--card-foreground)',
+                border: '1px solid var(--border)',
+              },
+            }}
+          />
         </LanguageProvider>
       </body>
     </html>

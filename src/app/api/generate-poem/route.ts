@@ -1,5 +1,131 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getGeminiResponse } from '@/lib/gemini';
+import { NextRequest } from 'next/server';
+import { streamText } from 'ai';
+import { 
+  getAIProvider, 
+  getModelId, 
+  FREE_MODEL_FALLBACKS, 
+  isUsingFreeModel,
+  isRateLimitError,
+  getDirectGeminiProvider,
+  hasDirectGeminiFallback,
+  DIRECT_GEMINI_MODEL,
+} from '@/lib/ai-provider';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+// Result type for fallback tracking
+type GenerationResult = {
+  text: string;
+  fallbackUsed: boolean;
+  modelUsed: string;
+  fallbackReason?: string;
+};
+
+// Try a single model and return the full text, or throw if it fails
+// We get the full response to ensure the model works before returning
+async function tryModel(
+  provider: ReturnType<typeof getAIProvider> | ReturnType<typeof getDirectGeminiProvider>,
+  modelId: string,
+  prompt: string
+): Promise<string> {
+  const result = streamText({
+    model: provider!(modelId),
+    prompt,
+    temperature: 0.8,
+    // Disable SDK's internal retries - we handle retries ourselves via fallback
+    maxRetries: 0,
+  });
+
+  // Get the full text - this will throw if rate limited
+  // We sacrifice streaming to ensure reliable fallback
+  const text = await result.text;
+  
+  return text;
+}
+
+// Generate with automatic fallback for free models
+async function generateWithFallback(
+  provider: ReturnType<typeof getAIProvider>,
+  primaryModelId: string,
+  prompt: string
+): Promise<GenerationResult> {
+  // If using a paid model, just try once (no fallback)
+  if (!isUsingFreeModel()) {
+    console.log(`Using paid model: ${primaryModelId}`);
+    const text = await tryModel(provider, primaryModelId, prompt);
+    return {
+      text,
+      fallbackUsed: false,
+      modelUsed: primaryModelId,
+    };
+  }
+
+  // For free models, try each in the fallback chain
+  const modelsToTry = [
+    primaryModelId,
+    ...FREE_MODEL_FALLBACKS.filter(m => m !== primaryModelId)
+  ];
+
+  let lastError: Error | null = null;
+  let fallbackCount = 0;
+
+  // Try all free models via OpenRouter
+  for (const modelId of modelsToTry) {
+    try {
+      console.log(`Trying model: ${modelId}`);
+      const text = await tryModel(provider, modelId, prompt);
+      
+      console.log(`✓ Success with model: ${modelId}${fallbackCount > 0 ? ` (after ${fallbackCount} fallback(s))` : ''}`);
+      
+      return {
+        text,
+        fallbackUsed: fallbackCount > 0,
+        modelUsed: modelId,
+        fallbackReason: fallbackCount > 0 ? `${fallbackCount} model(s) were busy` : undefined,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      if (isRateLimitError(error)) {
+        console.log(`✗ Rate limited on ${modelId}, trying next model...`);
+        fallbackCount++;
+        continue;
+      }
+      
+      // For non-rate-limit errors, throw immediately
+      console.error(`✗ Error on ${modelId}:`, error);
+      throw error;
+    }
+  }
+
+  // FINAL FALLBACK: Try direct Gemini API if configured
+  if (hasDirectGeminiFallback()) {
+    try {
+      console.log(`All free models exhausted. Falling back to direct Gemini API (using your quota)...`);
+      
+      const directGeminiProvider = getDirectGeminiProvider();
+      if (directGeminiProvider) {
+        const text = await tryModel(directGeminiProvider, DIRECT_GEMINI_MODEL, prompt);
+        
+        console.log(`✓ Success with direct Gemini API (backup)`);
+        
+        return {
+          text,
+          fallbackUsed: true,
+          modelUsed: 'direct-gemini',
+          fallbackReason: 'All free models were busy, used backup',
+        };
+      }
+    } catch (error) {
+      console.error('✗ Direct Gemini API also failed:', error);
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  // If all models failed, throw the last error
+  throw lastError || new Error('All free models are currently rate limited. Please try again in a moment.');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,35 +139,34 @@ export async function POST(request: NextRequest) {
       isHumanize,
       authorAge,
       authorGender,
-      poemLanguage = 'nl', // Default to Dutch
+      poemLanguage = 'nl',
     } = body;
 
     // Validate required fields
     if (!recipientName || recipientName.trim() === '') {
-      return NextResponse.json(
-        { error: 'Naam ontvanger is verplicht' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: 'Naam ontvanger is verplicht' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     // Validate humanize fields if humanize is enabled
     if (isHumanize) {
       if (!authorAge || authorAge.trim() === '') {
-        return NextResponse.json(
-          { error: 'Leeftijd schrijver is verplicht bij Humanize modus' },
-          { status: 400 }
+        return new Response(
+          JSON.stringify({ error: 'Leeftijd schrijver is verplicht bij Humanize modus' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
       if (!authorGender || authorGender.trim() === '') {
-        return NextResponse.json(
-          { error: 'Geslacht schrijver is verplicht bij Humanize modus' },
-          { status: 400 }
+        return new Response(
+          JSON.stringify({ error: 'Geslacht schrijver is verplicht bij Humanize modus' }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
     }
 
     // Determine style and tone
-    const style = isClassic ? 'klassiek' : 'vrij stromend';
     const tone =
       friendliness > 70
         ? 'heel vriendelijk en positief'
@@ -56,11 +181,9 @@ export async function POST(request: NextRequest) {
       const age = Number.parseInt(authorAge);
       const isYoung = age < 10;
       const isTeen = age >= 10 && age < 18;
-      const isAdult = age >= 18;
 
       let twirks = '';
 
-      // Determine gender label based on age and gender value
       const getGenderLabel = (age: number, gender: string) => {
         if (age < 10) {
           return gender === 'jongen' ? 'jongetje' : 'meisje';
@@ -74,21 +197,18 @@ export async function POST(request: NextRequest) {
       const genderLabel = getGenderLabel(age, authorGender);
 
       if (isYoung) {
-        // Young children (5-9)
         twirks = `- Voeg 2-3 kleine foutjes toe die typisch zijn voor een ${age}-jarig ${genderLabel}:
   * Kleine spelfouten (bijvoorbeeld "sint" i.p.v. "Sint", of "piet" i.p.v. "Piet")
   * Eenvoudige woordkeuze en korte zinnen
   * Soms een woord dat niet helemaal klopt maar wel logisch is
   * Mogelijk een kleine grammaticafout die natuurlijk klinkt voor deze leeftijd`;
       } else if (isTeen) {
-        // Teenagers (10-17)
         twirks = `- Voeg 2-3 kleine foutjes toe die typisch zijn voor een ${age}-jarige ${genderLabel}:
   * Soms een woord vergeten of een kleine typo
   * Mogelijk een informele woordkeuze die tussendoor sluipt
   * Een kleine inconsistentie in spelling (bijvoorbeeld "Sint" en "sint" door elkaar)
   * Soms een woord dat bijna goed is maar net niet perfect`;
       } else {
-        // Adults (18+)
         twirks = `- Voeg 2-3 subtiele foutjes toe die typisch zijn voor een ${age}-jarige ${genderLabel}:
   * Een kleine spelfout of typo die snel gemaakt kan worden
   * Mogelijk een woord dat verkeerd gespeld is maar wel begrijpelijk
@@ -106,14 +226,13 @@ export async function POST(request: NextRequest) {
       ar: 'Arabic',
       tr: 'Turkish',
     };
-    
+
     const poemLangName = languageMap[poemLanguage] || 'Nederlands';
-    
-    // Build the prompt with different instructions for classic vs free-flowing
+
+    // Build the prompt
     let prompt = '';
-    
+
     if (isClassic) {
-      // Classic style: strict 4+4+4 pattern
       prompt = `Schrijf een klassiek Sinterklaas gedicht in het ${poemLangName} voor ${recipientName}.
 
 Belangrijke instructies voor klassieke stijl:
@@ -132,12 +251,13 @@ ${
 - Maak het gedicht grappig, persoonlijk en passend bij de Sinterklaas traditie
 - Gebruik geen emoji's in het gedicht zelf
 - Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
-- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages (bijvoorbeeld "zwart", "zo zwart als roet", of andere kleurverwijzingen)
+- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages
 - Houd je strikt aan de 4-regel groepen structuur${getHumanizeInstructions()}
+
+BELANGRIJK: Begin je antwoord met "Madrid, 5 december" gevolgd door twee lege regels, en eindig met twee lege regels gevolgd door "Sint en Piet".
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     } else {
-      // Free-flowing style: variable line groupings, less strict rhyming
       prompt = `Schrijf een vrij stromend Sinterklaas gedicht in het ${poemLangName} voor ${recipientName}.
 
 Belangrijke instructies voor vrije stromende stijl:
@@ -157,75 +277,56 @@ ${
 - Maak het gedicht grappig, persoonlijk en natuurlijk klinkend
 - Gebruik geen emoji's in het gedicht zelf
 - Gebruik NOOIT de term "zwarte piet" - gebruik alleen "Piet" of "Sint en Piet"
-- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages (bijvoorbeeld "zwart", "zo zwart als roet", of andere kleurverwijzingen)
+- Verwijs NOOIT naar de kleur van Piet of naar kleuren in relatie tot mensen of personages
 - Laat de structuur natuurlijk en vrij stromen - geen strikte patronen${getHumanizeInstructions()}
+
+BELANGRIJK: Begin je antwoord met "Madrid, 5 december" gevolgd door twee lege regels, en eindig met twee lege regels gevolgd door "Sint en Piet".
 
 Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     }
 
-    // Generate the poem using the Gemini utility
-    const poem = await getGeminiResponse(prompt, poemLanguage);
+    // Get the AI provider and primary model
+    const provider = getAIProvider();
+    const primaryModelId = getModelId();
 
-    // Clean up the poem (remove any markdown formatting if present)
-    let cleanedPoem = poem
-      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
-      .replace(/^#+\s*/gm, '') // Remove markdown headers
-      .trim();
-
-    // Filter out problematic terms and color references related to Piet or people
-    // Replace "zwarte piet" with "Piet"
-    cleanedPoem = cleanedPoem.replace(/\b[zZ]warte\s+[pP]iet\b/gi, 'Piet');
+    // Generate with automatic fallback for free models
+    const { text, fallbackUsed, modelUsed, fallbackReason } = await generateWithFallback(
+      provider,
+      primaryModelId,
+      prompt
+    );
     
-    // Remove the specific problematic phrase "zo zwart als roet" entirely
-    cleanedPoem = cleanedPoem.replace(/\bzo\s+zwart\s+als\s+roet\b/gi, '');
-    
-    // Remove "als roet" phrase (common variation)
-    cleanedPoem = cleanedPoem.replace(/\bals\s+roet\b/gi, '');
-    
-    // Filter out "zwart" or "zwarte" when it appears in the same line as "Piet"
-    // Process line by line to avoid false positives
-    const lines = cleanedPoem.split('\n');
-    const filteredLines = lines.map((line) => {
-      // If line contains "Piet", remove color-related words from that line
-      if (/\b[Pp]iet\b/i.test(line)) {
-        // Remove "zwart" or "zwarte" from lines containing "Piet"
-        line = line.replace(/\b[zZ]warte?\b/gi, '');
-      }
-      return line;
+    // Return the poem text with custom headers for fallback status
+    return new Response(text, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Fallback-Used': fallbackUsed ? 'true' : 'false',
+        'X-Model-Used': modelUsed,
+        ...(fallbackReason ? { 'X-Fallback-Reason': fallbackReason } : {}),
+      },
     });
-    cleanedPoem = filteredLines.join('\n');
     
-    // Clean up any double spaces or awkward spacing created by replacements
-    cleanedPoem = cleanedPoem.replace(/\s{2,}/g, ' '); // Multiple spaces to single space
-    cleanedPoem = cleanedPoem.replace(/\n\s+/g, '\n'); // Spaces after newlines
-    cleanedPoem = cleanedPoem.replace(/\s+\n/g, '\n'); // Spaces before newlines
-    cleanedPoem = cleanedPoem.trim();
-
-    // Add required header and footer
-    const header = 'Madrid, 5 december\n\n';
-    const footer = '\n\nSint en Piet';
-
-    // Ensure the poem doesn't already start/end with these
-    if (!cleanedPoem.startsWith('Madrid')) {
-      cleanedPoem = header + cleanedPoem;
-    }
-    if (!cleanedPoem.endsWith('Sint en Piet')) {
-      cleanedPoem = cleanedPoem + footer;
-    }
-
-    return NextResponse.json({ poem: cleanedPoem });
   } catch (error) {
     console.error('Error generating poem:', error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Er is een fout opgetreden bij het genereren van het gedicht',
-      },
-      { status: 500 }
+    
+    // Check if it's a rate limit error (all models exhausted)
+    if (isRateLimitError(error)) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Alle gratis modellen zijn momenteel druk. Probeer het over een paar seconden opnieuw.' 
+        }),
+        { status: 429, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error
+          ? error.message
+          : 'Er is een fout opgetreden bij het genereren van het gedicht',
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
-
-

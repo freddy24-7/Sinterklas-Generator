@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ControlPanel from './control-panel';
@@ -15,15 +16,51 @@ export default function PoemGenerator() {
   const [isHumanize, setIsHumanize] = useState(false);
   const [authorAge, setAuthorAge] = useState('');
   const [authorGender, setAuthorGender] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [completion, setCompletion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedPoem, setGeneratedPoem] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<Error | null>(null);
   const { t, poemLanguage } = useLanguage();
+  
+  // Ref for abort controller
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clean up the poem text (filter problematic content)
+  const cleanPoem = useCallback((text: string): string => {
+    let cleaned = text
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/^#+\s*/gm, '') // Remove markdown headers
+      .trim();
+
+    // Filter out problematic terms
+    cleaned = cleaned.replace(/\b[zZ]warte\s+[pP]iet\b/gi, 'Piet');
+    cleaned = cleaned.replace(/\bzo\s+zwart\s+als\s+roet\b/gi, '');
+    cleaned = cleaned.replace(/\bals\s+roet\b/gi, '');
+
+    // Filter "zwart" from lines containing "Piet"
+    const lines = cleaned.split('\n');
+    const filteredLines = lines.map((line) => {
+      if (/\b[Pp]iet\b/i.test(line)) {
+        line = line.replace(/\b[zZ]warte?\b/gi, '');
+      }
+      return line;
+    });
+    cleaned = filteredLines.join('\n');
+
+    // Clean up spacing
+    cleaned = cleaned.replace(/\s{2,}/g, ' ');
+    cleaned = cleaned.replace(/\n\s+/g, '\n');
+    cleaned = cleaned.replace(/\s+\n/g, '\n');
+    
+    return cleaned.trim();
+  }, []);
+
+  // The displayed poem with real-time cleaning
+  const displayedPoem = completion ? cleanPoem(completion) : '';
 
   const handleDownloadPDF = async () => {
-    if (!generatedPoem) return;
+    if (!displayedPoem) return;
 
-    // Lazy load jsPDF only when needed
     const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -31,29 +68,24 @@ export default function PoemGenerator() {
     const margin = 20;
     const maxWidth = pageWidth - 2 * margin;
 
-    // Set font
     doc.setFont('helvetica');
     doc.setFontSize(12);
 
-    // Split poem into lines
-    const lines = generatedPoem.split('\n');
+    const lines = displayedPoem.split('\n');
     let y = margin + 10;
     const lineHeight = 7;
 
     lines.forEach((line) => {
-      // Check if we need a new page
       if (y + lineHeight > pageHeight - margin) {
         doc.addPage();
         y = margin;
       }
 
-      // Handle empty lines
       if (line.trim() === '') {
         y += lineHeight / 2;
         return;
       }
 
-      // Split long lines if needed
       const splitLines = doc.splitTextToSize(line, maxWidth);
       splitLines.forEach((splitLine: string) => {
         if (y + lineHeight > pageHeight - margin) {
@@ -65,7 +97,6 @@ export default function PoemGenerator() {
       });
     });
 
-    // Generate filename with recipient name if available
     const filename = recipientName
       ? `Sinterklaas_Gedicht_${recipientName.replace(/\s+/g, '_')}.pdf`
       : 'Sinterklaas_Gedicht.pdf';
@@ -74,9 +105,8 @@ export default function PoemGenerator() {
   };
 
   const handlePrint = () => {
-    if (!generatedPoem) return;
+    if (!displayedPoem) return;
 
-    // Create a new window with the poem for printing
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
@@ -89,13 +119,8 @@ export default function PoemGenerator() {
           <title>Sinterklaas Gedicht${recipientName ? ` - ${recipientName}` : ''}</title>
           <style>
             @media print {
-              @page {
-                margin: 2cm;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-              }
+              @page { margin: 2cm; }
+              body { margin: 0; padding: 0; }
             }
             body {
               font-family: 'Times New Roman', serif;
@@ -107,18 +132,12 @@ export default function PoemGenerator() {
               color: #000;
               background: #fff;
             }
-            .poem {
-              white-space: pre-line;
-              text-align: left;
-            }
-            .poem p {
-              margin: 0;
-              padding: 0;
-            }
+            .poem { white-space: pre-line; text-align: left; }
+            .poem p { margin: 0; padding: 0; }
           </style>
         </head>
         <body>
-          <div class="poem">${generatedPoem.replace(/\n/g, '<br>')}</div>
+          <div class="poem">${displayedPoem.replace(/\n/g, '<br>')}</div>
         </body>
       </html>
     `;
@@ -126,50 +145,49 @@ export default function PoemGenerator() {
     printWindow.document.write(printContent);
     printWindow.document.close();
 
-    // Wait for content to load, then print
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.print();
-        // Optionally close the window after printing
-        // printWindow.close();
       }, 250);
     };
   };
 
   const handleGeneratePoem = async () => {
-    // Prevent multiple simultaneous requests (429 protection)
-    if (isLoading) {
-      return;
-    }
+    // Prevent multiple simultaneous requests
+    if (isLoading) return;
+
+    // Clear previous state
+    setValidationError(null);
+    setApiError(null);
+    setCompletion('');
 
     // Validate recipient name
     if (!recipientName || recipientName.trim() === '') {
-      setError(t('poemGenerator.errors.noRecipientName'));
+      setValidationError(t('poemGenerator.errors.noRecipientName'));
       return;
     }
 
     // Validate humanize fields if humanize is enabled
     if (isHumanize) {
       if (!authorAge || authorAge.trim() === '') {
-        setError(t('poemGenerator.errors.noAuthorAge'));
+        setValidationError(t('poemGenerator.errors.noAuthorAge'));
         return;
       }
       if (!authorGender || authorGender.trim() === '') {
-        setError(t('poemGenerator.errors.noAuthorGender'));
+        setValidationError(t('poemGenerator.errors.noAuthorGender'));
         return;
       }
     }
 
     setIsLoading(true);
-    setError(null);
-    setGeneratedPoem('');
+
+    // Create abort controller for this request
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch('/api/generate-poem', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientName: recipientName.trim(),
           recipientFacts: recipientFacts.trim(),
@@ -181,37 +199,67 @@ export default function PoemGenerator() {
           authorGender: isHumanize ? authorGender.trim() : '',
           poemLanguage,
         }),
+        signal: abortControllerRef.current.signal,
       });
 
-      const data = await response.json();
-
+      // Check for errors
       if (!response.ok) {
-        // Handle 429 rate limit errors specifically
-        if (response.status === 429) {
-          throw new Error(t('poemGenerator.errors.rateLimit'));
-        }
-        throw new Error(data.error || t('poemGenerator.errors.generic'));
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
       }
 
-      if (data.poem) {
-        setGeneratedPoem(data.poem);
-      } else {
-        throw new Error(t('poemGenerator.errors.noPoem'));
+      // Check if fallback was used and notify user
+      const fallbackUsed = response.headers.get('X-Fallback-Used');
+      const fallbackReason = response.headers.get('X-Fallback-Reason');
+      const modelUsed = response.headers.get('X-Model-Used');
+
+      if (fallbackUsed === 'true') {
+        // Show info toast about fallback
+        const message = modelUsed === 'direct-gemini'
+          ? '⚡ Gratis modellen waren druk, backup model gebruikt'
+          : '⚡ Even gewisseld naar een ander model';
+
+        toast.info(message, {
+          description: fallbackReason || 'Druk op servers, maar gedicht komt eraan!',
+          duration: 4000,
+        });
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : t('poemGenerator.errors.unknown');
-      setError(errorMessage);
-      console.error('Error generating poem:', err);
+
+      // Get the full poem text
+      const poemText = await response.text();
+      setCompletion(poemText);
+      
+      // Show success toast
+      toast.success('Gedicht gegenereerd! 🎉', {
+        duration: 2000,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Request was cancelled, ignore
+        return;
+      }
+
+      const errorMessage = error instanceof Error ? error.message : 'Onbekende fout';
+      setApiError(error instanceof Error ? error : new Error(errorMessage));
+
+      // Show error toast
+      toast.error('Er ging iets mis', {
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
+
+  // Combined error from validation or API
+  const error = validationError || (apiError ? apiError.message : null);
 
   return (
     <div className="max-w-6xl mx-auto w-full overflow-x-hidden px-2 sm:px-0 min-w-0">
       <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full min-w-0">
-        {/* Control Panel - Takes 1 column on large screens */}
+        {/* Control Panel */}
         <div className="lg:col-span-1">
           <ControlPanel
             numLines={numLines}
@@ -235,19 +283,18 @@ export default function PoemGenerator() {
           />
         </div>
 
-        {/* Generated Poem Display - Takes 2 columns on large screens */}
+        {/* Generated Poem Display */}
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-6 lg:p-8 min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] bg-card border shadow-sm">
-            {generatedPoem && (
+            {displayedPoem && (
               <div className="flex flex-wrap gap-2 mb-6 justify-end print:hidden" role="toolbar" aria-label={t('poemGenerator.actions.copy')}>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatedPoem);
-                  }}
+                  onClick={() => navigator.clipboard.writeText(displayedPoem)}
                   className="text-xs sm:text-sm flex-shrink-0"
                   aria-label={t('poemGenerator.actions.ariaLabels.copy')}
+                  disabled={isLoading}
                 >
                   <span aria-hidden="true">📋</span>
                   <span className="ml-1">{t('poemGenerator.actions.copy')}</span>
@@ -258,6 +305,7 @@ export default function PoemGenerator() {
                   onClick={handlePrint}
                   className="text-xs sm:text-sm flex-shrink-0"
                   aria-label={t('poemGenerator.actions.ariaLabels.print')}
+                  disabled={isLoading}
                 >
                   <span aria-hidden="true">🖨️</span>
                   <span className="ml-1">{t('poemGenerator.actions.print')}</span>
@@ -268,6 +316,7 @@ export default function PoemGenerator() {
                   onClick={handleDownloadPDF}
                   className="text-xs sm:text-sm flex-shrink-0"
                   aria-label={t('poemGenerator.actions.ariaLabels.pdf')}
+                  disabled={isLoading}
                 >
                   <span aria-hidden="true">📄</span>
                   <span className="ml-1">{t('poemGenerator.actions.pdf')}</span>
@@ -276,11 +325,12 @@ export default function PoemGenerator() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setGeneratedPoem('');
-                    setError(null);
+                    setCompletion('');
+                    setValidationError(null);
                   }}
                   className="text-xs sm:text-sm flex-shrink-0"
                   aria-label={t('poemGenerator.actions.ariaLabels.clear')}
+                  disabled={isLoading}
                 >
                   <span aria-hidden="true">🔄</span>
                   <span className="ml-1">{t('poemGenerator.actions.clear')}</span>
@@ -289,8 +339,8 @@ export default function PoemGenerator() {
             )}
 
             {/* Error Message */}
-            {error && (
-              <div 
+            {error && !isLoading && (
+              <div
                 className="mb-4 sm:mb-6 p-3 sm:p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
                 role="alert"
                 aria-live="assertive"
@@ -300,9 +350,9 @@ export default function PoemGenerator() {
               </div>
             )}
 
-            {/* Loading State */}
-            {isLoading && (
-              <div 
+            {/* Loading State with Streaming */}
+            {isLoading && !displayedPoem && (
+              <div
                 className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4"
                 role="status"
                 aria-live="polite"
@@ -321,23 +371,27 @@ export default function PoemGenerator() {
             )}
 
             {/* Generated Poem */}
-            {!isLoading && generatedPoem && (
-              <div className="space-y-4" role="region" aria-label="Gegenereerd gedicht">
+            {displayedPoem && (
+              <div 
+                className="space-y-4 max-h-[500px] overflow-y-auto" 
+                role="region" 
+                aria-label="Gegenereerd gedicht"
+              >
                 <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                  <div 
+                  <div
                     className="text-foreground whitespace-pre-line leading-relaxed font-serif text-sm sm:text-base lg:text-lg xl:text-xl break-words"
                     role="article"
                     aria-live="polite"
                     aria-atomic="true"
                   >
-                    {generatedPoem}
+                    {displayedPoem}
                   </div>
                 </div>
               </div>
             )}
 
             {/* Empty State */}
-            {!isLoading && !generatedPoem && !error && (
+            {!isLoading && !displayedPoem && !error && (
               <div className="flex items-center justify-center h-full min-h-[300px] sm:min-h-[400px] text-center px-4">
                 <div className="space-y-3 max-w-sm">
                   <div className="text-3xl sm:text-4xl mb-4">✨</div>
