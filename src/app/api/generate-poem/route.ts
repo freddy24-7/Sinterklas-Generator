@@ -10,6 +10,12 @@ import {
   hasDirectGeminiFallback,
   DIRECT_GEMINI_MODEL,
 } from '@/lib/ai-provider';
+import { 
+  checkRateLimit, 
+  getClientIP, 
+  formatRateLimitMessage,
+  DEFAULT_LIMITS,
+} from '@/lib/rate-limiter';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -203,6 +209,40 @@ async function streamWithFallback(
 
 export async function POST(request: NextRequest) {
   try {
+    // === RATE LIMITING ===
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(clientIP, DEFAULT_LIMITS);
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`🚫 Rate limited: ${clientIP} - remaining: min=${rateLimitResult.remaining.minute}, hour=${rateLimitResult.remaining.hour}, day=${rateLimitResult.remaining.day}`);
+      
+      // Determine which limit to show in Retry-After
+      let retryAfter = rateLimitResult.resetIn.minute;
+      if (rateLimitResult.remaining.hour <= 0) retryAfter = rateLimitResult.resetIn.hour;
+      if (rateLimitResult.remaining.day <= 0) retryAfter = rateLimitResult.resetIn.day;
+      
+      return new Response(
+        JSON.stringify({ 
+          error: formatRateLimitMessage(rateLimitResult, 'nl'),
+          remaining: rateLimitResult.remaining,
+          resetIn: rateLimitResult.resetIn,
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Retry-After': String(retryAfter),
+            'X-RateLimit-Limit-Minute': String(DEFAULT_LIMITS.perMinute),
+            'X-RateLimit-Limit-Hour': String(DEFAULT_LIMITS.perHour),
+            'X-RateLimit-Limit-Day': String(DEFAULT_LIMITS.perDay),
+            'X-RateLimit-Remaining-Minute': String(rateLimitResult.remaining.minute),
+            'X-RateLimit-Remaining-Hour': String(rateLimitResult.remaining.hour),
+            'X-RateLimit-Remaining-Day': String(rateLimitResult.remaining.day),
+          } 
+        }
+      );
+    }
+    
     const body = await request.json();
     const {
       recipientName,
@@ -384,7 +424,7 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
     console.log('═══════════════════════════════════════════════════════');
     console.log('');
     
-    // Return the streaming response with custom headers for fallback status
+    // Return the streaming response with custom headers for fallback status and rate limits
     return new Response(stream, {
       status: 200,
       headers: {
@@ -393,6 +433,13 @@ Schrijf alleen het gedicht, zonder extra uitleg of opmerkingen.`;
         'X-Fallback-Used': fallbackUsed ? 'true' : 'false',
         'X-Model-Used': modelUsed,
         ...(fallbackReason ? { 'X-Fallback-Reason': fallbackReason } : {}),
+        // Rate limit info for the client
+        'X-RateLimit-Limit-Minute': String(DEFAULT_LIMITS.perMinute),
+        'X-RateLimit-Limit-Hour': String(DEFAULT_LIMITS.perHour),
+        'X-RateLimit-Limit-Day': String(DEFAULT_LIMITS.perDay),
+        'X-RateLimit-Remaining-Minute': String(rateLimitResult.remaining.minute),
+        'X-RateLimit-Remaining-Hour': String(rateLimitResult.remaining.hour),
+        'X-RateLimit-Remaining-Day': String(rateLimitResult.remaining.day),
       },
     });
     

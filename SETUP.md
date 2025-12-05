@@ -139,14 +139,72 @@ Get your key at [Google AI Studio](https://makersuite.google.com/app/apikey). Th
 - Try switching to a free model: `AI_MODEL=gemini-2.0-flash-free`
 
 ### Rate Limiting
-OpenRouter pools rate limits across their infrastructure, so you're much less likely to hit rate limits compared to direct API access. If you do get rate limited, wait a few seconds and try again.
+The app has two layers of rate limiting:
+
+1. **User Rate Limiting (Vercel KV):** Limits requests per IP address to prevent abuse
+2. **AI Provider Fallback:** Automatically switches models when a provider is rate limited
+
+#### User Rate Limits
+By default, users are limited to:
+- **5 poems per minute**
+- **30 poems per hour**
+- **100 poems per day**
+
+These limits can be adjusted in `src/lib/rate-limiter.ts`.
+
+## Vercel KV Setup (Rate Limiting Storage)
+
+Rate limiting uses [Vercel KV](https://vercel.com/storage/kv) to persist counters across serverless instances. **Free tier includes 30,000 requests/month** - more than enough for most use cases.
+
+### Setting Up Vercel KV
+
+1. Go to your Vercel project dashboard
+2. Click on "Storage" tab
+3. Click "Create" → "KV Database"
+4. Name it (e.g., `sinterklaas-ratelimit`)
+5. Click "Create"
+6. Connect it to your project
+
+Vercel automatically adds these environment variables:
+```env
+KV_REST_API_URL=your_kv_url
+KV_REST_API_TOKEN=your_kv_token
+KV_REST_API_READ_ONLY_TOKEN=your_read_only_token
+KV_URL=your_kv_redis_url
+```
+
+### Local Development without KV
+
+If `KV_REST_API_URL` is not set, rate limiting is **disabled** and a warning is logged. This is fine for local development.
+
+To test rate limiting locally:
+1. Create a KV database on Vercel
+2. Copy the environment variables to your `.env.local`
+
+### Rate Limit Response Headers
+
+The API returns rate limit information in response headers:
+- `X-RateLimit-Limit-Minute`: Max requests per minute
+- `X-RateLimit-Limit-Hour`: Max requests per hour
+- `X-RateLimit-Limit-Day`: Max requests per day
+- `X-RateLimit-Remaining-*`: Remaining requests in each window
 
 ## Vercel Deployment
 
-When deploying to Vercel, add your environment variables in the Vercel dashboard:
+When deploying to Vercel:
 
+### 1. Set Up Environment Variables
 1. Go to your project settings
 2. Navigate to Environment Variables
 3. Add `OPENROUTER_API_KEY` with your API key
 4. (Optional) Add `AI_MODEL` if you want a non-default model
 5. (Optional) Add `SITE_URL` with your production URL
+6. (Optional) Add `GEMINI_API_KEY` for direct Gemini fallback
+
+### 2. Set Up Vercel KV (Recommended)
+1. In your Vercel dashboard, go to "Storage"
+2. Create a new KV database
+3. Connect it to your project
+4. Environment variables are automatically added
+
+Without Vercel KV, rate limiting is disabled and any user can generate unlimited poems (which could burn through your API credits quickly).
