@@ -118,13 +118,14 @@ async function streamWithFallback(
   let lastError: Error | null = null;
   let fallbackCount = 0;
 
-  // Try all free models via OpenRouter
+  // Try all free models via OpenRouter FIRST
+  console.log(`🔄 Trying ${modelsToTry.length} free OpenRouter model(s) first...`);
   for (const modelId of modelsToTry) {
     try {
-      console.log(`Trying model: ${modelId}`);
+      console.log(`  → Trying OpenRouter model: ${modelId}`);
       const { textStream, firstChunk } = await tryModelStream(provider, modelId, prompt);
       
-      console.log(`✓ Success with model: ${modelId}${fallbackCount > 0 ? ` (after ${fallbackCount} fallback(s))` : ''}`);
+      console.log(`✓ Success with OpenRouter model: ${modelId}${fallbackCount > 0 ? ` (after ${fallbackCount} fallback(s))` : ''}`);
       
       // Create the streaming response
       const stream = new ReadableStream({
@@ -153,14 +154,36 @@ async function streamWithFallback(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       
-      if (isRateLimitError(error)) {
-        console.log(`✗ Rate limited on ${modelId}, trying next model...`);
+      // Check statusCode first to avoid misclassifying errors
+      const errorWithStatus = error as Error & { statusCode?: number; responseBody?: string };
+      const statusCode = errorWithStatus.statusCode;
+      
+      // Handle rate limit errors (429)
+      if (statusCode === 429 || isRateLimitError(error)) {
+        console.log(`  ✗ Rate limited on OpenRouter model ${modelId}, trying next...`);
         fallbackCount++;
         continue;
       }
       
-      // For non-rate-limit errors, throw immediately
-      console.error(`✗ Error on ${modelId}:`, error);
+      // For non-rate-limit errors (404, 400, etc.), also try next model
+      // This handles cases where a model doesn't exist, is invalid, or requires configuration
+      if (statusCode === 404 || statusCode === 400) {
+        const errorMessage = error instanceof Error ? error.message.toLowerCase() : '';
+        const responseBody = errorWithStatus.responseBody || '';
+        const fullErrorText = (errorMessage + ' ' + responseBody).toLowerCase();
+        
+        // Check if it's a data policy/privacy configuration issue
+        if (fullErrorText.includes('data policy') || fullErrorText.includes('privacy')) {
+          console.log(`  ✗ OpenRouter model ${modelId} requires privacy settings configuration (see https://openrouter.ai/settings/privacy), trying next...`);
+        } else {
+          console.log(`  ✗ OpenRouter model ${modelId} unavailable (${statusCode}), trying next...`);
+        }
+        fallbackCount++;
+        continue;
+      }
+      
+      // For other errors, throw immediately
+      console.error(`  ✗ Error on OpenRouter model ${modelId}:`, error);
       throw error;
     }
   }
@@ -168,13 +191,13 @@ async function streamWithFallback(
   // FINAL FALLBACK: Try direct Gemini API if configured
   if (hasDirectGeminiFallback()) {
     try {
-      console.log(`All free models exhausted. Falling back to direct Gemini API (using your quota)...`);
+      console.log(`⚠️ All ${modelsToTry.length} free OpenRouter models failed. Falling back to direct Gemini API (using your quota)...`);
       
       const directGeminiProvider = getDirectGeminiProvider();
       if (directGeminiProvider) {
         const { textStream, firstChunk } = await tryModelStream(directGeminiProvider, DIRECT_GEMINI_MODEL, prompt);
         
-        console.log(`✓ Success with direct Gemini API (backup)`);
+        console.log(`✓ Success with direct Gemini API (fallback)`);
         
         const stream = new ReadableStream({
           async start(controller) {
@@ -198,13 +221,13 @@ async function streamWithFallback(
         };
       }
     } catch (error) {
-      console.error('✗ Direct Gemini API also failed:', error);
+      console.error('✗ Direct Gemini API fallback also failed:', error);
       lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
 
   // If all models failed, throw the last error
-  throw lastError || new Error('All free models are currently rate limited. Please try again in a moment.');
+  throw lastError || new Error('All models are currently unavailable. Please try again in a moment.');
 }
 
 export async function POST(request: NextRequest) {

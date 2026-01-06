@@ -48,8 +48,6 @@ export const DIRECT_GEMINI_MODEL = 'gemini-2.0-flash';
 export const AVAILABLE_MODELS = {
   // Free tier models (great for development)
   'gemini-2.0-flash-free': 'google/gemini-2.0-flash-exp:free',
-  'gemini-flash-free': 'google/gemini-flash-1.5-8b-exp',
-  'llama-3.1-8b': 'meta-llama/llama-3.1-8b-instruct:free',
   
   // Paid but affordable models
   'gemini-2.0-flash': 'google/gemini-2.0-flash-001',
@@ -66,10 +64,9 @@ export const AVAILABLE_MODELS = {
 export type ModelKey = keyof typeof AVAILABLE_MODELS;
 
 // Free models to try in order when rate limited (fallback chain)
+// Note: Only includes models that work without additional configuration
 export const FREE_MODEL_FALLBACKS = [
   'google/gemini-2.0-flash-exp:free',
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'google/gemini-flash-1.5-8b-exp',
 ] as const;
 
 // Get the primary model to use - defaults to free Gemini
