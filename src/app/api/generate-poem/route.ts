@@ -9,6 +9,7 @@ import {
   getDirectGeminiProvider,
   hasDirectGeminiFallback,
   DIRECT_GEMINI_MODEL,
+  DIRECT_GEMINI_FALLBACK_MODELS,
 } from '@/lib/ai-provider';
 import { 
   checkRateLimit, 
@@ -57,9 +58,8 @@ async function tryModelStream(
   }
   
   if (firstResult.done) {
-    // Stream ended without any content - this can happen with rate limits
-    // Throw an error that can be detected as rate limit related
-    throw new Error('Model returned empty response (possibly rate limited)');
+    // Stream ended without any content - treat as provider failure
+    throw new Error('Model returned empty response from provider');
   }
   
   const firstChunk = firstResult.value;
@@ -157,6 +157,7 @@ async function streamWithFallback(
       // Check statusCode first to avoid misclassifying errors
       const errorWithStatus = error as Error & { statusCode?: number; responseBody?: string };
       const statusCode = errorWithStatus.statusCode;
+      const message = error instanceof Error ? error.message.toLowerCase() : '';
       
       // Handle rate limit errors (429)
       if (statusCode === 429 || isRateLimitError(error)) {
@@ -182,6 +183,13 @@ async function streamWithFallback(
         continue;
       }
       
+      // For "empty response" provider errors, also try next model / fallback
+      if (message.includes('model returned empty response from provider')) {
+        console.log(`  ✗ OpenRouter model ${modelId} returned empty response, trying next fallback...`);
+        fallbackCount++;
+        continue;
+      }
+      
       // For other errors, throw immediately
       console.error(`  ✗ Error on OpenRouter model ${modelId}:`, error);
       throw error;
@@ -190,39 +198,43 @@ async function streamWithFallback(
 
   // FINAL FALLBACK: Try direct Gemini API if configured
   if (hasDirectGeminiFallback()) {
-    try {
-      console.log(`⚠️ All ${modelsToTry.length} free OpenRouter models failed. Falling back to direct Gemini API (using your quota)...`);
-      
-      const directGeminiProvider = getDirectGeminiProvider();
-      if (directGeminiProvider) {
-        const { textStream, firstChunk } = await tryModelStream(directGeminiProvider, DIRECT_GEMINI_MODEL, prompt);
-        
-        console.log(`✓ Success with direct Gemini API (fallback)`);
-        
-        const stream = new ReadableStream({
-          async start(controller) {
-            try {
-              controller.enqueue(encoder.encode(firstChunk));
-              for await (const chunk of textStream) {
-                controller.enqueue(encoder.encode(chunk));
+    console.log(`⚠️ All ${modelsToTry.length} free OpenRouter models failed. Falling back to direct Gemini API (using your quota)...`);
+    
+    const directGeminiProvider = getDirectGeminiProvider();
+    if (directGeminiProvider) {
+      for (const modelId of DIRECT_GEMINI_FALLBACK_MODELS) {
+        try {
+          console.log(`  → Trying direct Gemini model: ${modelId}`);
+          const { textStream, firstChunk } = await tryModelStream(directGeminiProvider, modelId, prompt);
+          
+          console.log(`✓ Success with direct Gemini API model: ${modelId}`);
+          
+          const stream = new ReadableStream({
+            async start(controller) {
+              try {
+                controller.enqueue(encoder.encode(firstChunk));
+                for await (const chunk of textStream) {
+                  controller.enqueue(encoder.encode(chunk));
+                }
+                controller.close();
+              } catch (error) {
+                controller.error(error);
               }
-              controller.close();
-            } catch (error) {
-              controller.error(error);
-            }
-          },
-        });
-        
-        return {
-          stream,
-          fallbackUsed: true,
-          modelUsed: 'direct-gemini',
-          fallbackReason: 'All free models were busy, used backup',
-        };
+            },
+          });
+          
+          return {
+            stream,
+            fallbackUsed: true,
+            modelUsed: `direct-gemini:${modelId}`,
+            fallbackReason: 'All free models were busy, used backup Gemini model chain',
+          };
+        } catch (error) {
+          console.error(`  ✗ Direct Gemini model ${modelId} failed:`, error);
+          lastError = error instanceof Error ? error : new Error(String(error));
+          // Try next Gemini model in the chain
+        }
       }
-    } catch (error) {
-      console.error('✗ Direct Gemini API fallback also failed:', error);
-      lastError = error instanceof Error ? error : new Error(String(error));
     }
   }
 

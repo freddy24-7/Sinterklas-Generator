@@ -205,6 +205,4 @@ When deploying to Vercel:
 1. In your Vercel dashboard, go to "Storage"
 2. Create a new KV database
 3. Connect it to your project
-4. Environment variables are automatically added
-
-Without Vercel KV, rate limiting is disabled and any user can generate unlimited poems (which could burn through your API credits quickly).
+4. Environment variables are automatically addedWithout Vercel KV, rate limiting is disabled and any user can generate unlimited poems (which could burn through your API credits quickly).

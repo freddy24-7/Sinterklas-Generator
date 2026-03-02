@@ -43,6 +43,13 @@ export function hasDirectGeminiFallback(): boolean {
 // Get the direct Gemini model ID
 export const DIRECT_GEMINI_MODEL = 'gemini-2.0-flash';
 
+// Direct Gemini models to try in order when using your own API key
+export const DIRECT_GEMINI_FALLBACK_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+] as const;
+
 // Available models through OpenRouter
 // Free models are marked with :free suffix
 export const AVAILABLE_MODELS = {
@@ -91,8 +98,7 @@ export function isRateLimitError(error: unknown): boolean {
       message.includes('rate') ||
       message.includes('429') ||
       message.includes('too many requests') ||
-      message.includes('temporarily rate-limited') ||
-      message.includes('empty response') // Empty response often means rate limited
+      message.includes('temporarily rate-limited')
     ) {
       return true;
     }
