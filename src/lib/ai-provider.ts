@@ -84,8 +84,7 @@ export function getModelId(): string {
 
 // Check if the configured model is a free model (uses fallback chain)
 export function isUsingFreeModel(): boolean {
-  const modelId = getModelId();
-  return FREE_MODEL_FALLBACKS.includes(modelId as typeof FREE_MODEL_FALLBACKS[number]);
+  return getModelId().endsWith(':free');
 }
 
 // Check if an error is a rate limit error (429)
