@@ -26,7 +26,7 @@ async function testModel(
     await generateText({
       model: provider!(modelId),
       prompt: PROMPT,
-      maxTokens: 10,
+      maxOutputTokens: 10,
       maxRetries: 0,
     });
     return { ok: true };
