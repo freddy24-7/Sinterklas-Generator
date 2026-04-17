@@ -41,27 +41,28 @@ export function hasDirectGeminiFallback(): boolean {
 }
 
 // Get the direct Gemini model ID
-export const DIRECT_GEMINI_MODEL = 'gemini-2.0-flash';
+export const DIRECT_GEMINI_MODEL = 'gemini-2.5-flash';
 
 // Direct Gemini models to try in order when using your own API key
 export const DIRECT_GEMINI_FALLBACK_MODELS = [
-  'gemini-2.0-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.0-flash-lite',
   'gemini-2.5-flash',
-  'gemini-flash-latest',
+  'gemini-2.0-flash',
 ] as const;
 
 // Available models through OpenRouter
 // Free models are marked with :free suffix
 export const AVAILABLE_MODELS = {
   // Free tier models (great for development)
-  'gemini-2.0-flash-free': 'google/gemini-2.0-flash-exp:free',
-  
+  'gemini-2.0-flash-free': 'google/gemini-2.0-flash-lite:free',
+
   // Paid but affordable models
   'gemini-2.0-flash': 'google/gemini-2.0-flash-001',
   'gemini-1.5-flash': 'google/gemini-flash-1.5',
   'gpt-4o-mini': 'openai/gpt-4o-mini',
   'claude-3-haiku': 'anthropic/claude-3-haiku',
-  
+
   // Premium models (best quality)
   'gpt-4o': 'openai/gpt-4o',
   'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
@@ -73,7 +74,8 @@ export type ModelKey = keyof typeof AVAILABLE_MODELS;
 // Free models to try in order when rate limited (fallback chain)
 // Note: Only includes models that work without additional configuration
 export const FREE_MODEL_FALLBACKS = [
-  'google/gemini-2.0-flash-exp:free',
+  'google/gemini-2.0-flash-lite:free',
+  'google/gemini-2.5-flash-lite:free',
 ] as const;
 
 // Get the primary model to use - defaults to free Gemini
