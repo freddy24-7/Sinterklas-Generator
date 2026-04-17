@@ -44,11 +44,10 @@ export function hasDirectGeminiFallback(): boolean {
 export const DIRECT_GEMINI_MODEL = 'gemini-2.5-flash';
 
 // Direct Gemini models to try in order when using your own API key
+// gemini-2.0-* models excluded: free tier quota is permanently 0 for this key
 export const DIRECT_GEMINI_FALLBACK_MODELS = [
   'gemini-2.5-flash-lite',
-  'gemini-2.0-flash-lite',
   'gemini-2.5-flash',
-  'gemini-2.0-flash',
 ] as const;
 
 // Available models through OpenRouter
@@ -72,11 +71,10 @@ export const AVAILABLE_MODELS = {
 export type ModelKey = keyof typeof AVAILABLE_MODELS;
 
 // Free models to try in order when rate limited (fallback chain)
-// Note: Only includes models that work without additional configuration
-export const FREE_MODEL_FALLBACKS = [
-  'google/gemini-2.0-flash-lite:free',
-  'google/gemini-2.5-flash-lite:free',
-] as const;
+// TODO: verify valid free model IDs at https://openrouter.ai/models?q=gemini&supported_parameters=free
+// 'google/gemini-2.0-flash-lite:free' returns 400 (invalid ID)
+// 'google/gemini-2.5-flash-lite:free' returns 404 (no endpoints)
+export const FREE_MODEL_FALLBACKS: readonly string[] = [];
 
 // Get the primary model to use - defaults to free Gemini
 export function getModelId(): string {
