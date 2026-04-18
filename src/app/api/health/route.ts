@@ -1,71 +1,75 @@
-import { generateText } from 'ai';
 import {
-  getAIProvider,
-  getDirectGeminiProvider,
   FREE_MODEL_FALLBACKS,
   DIRECT_GEMINI_FALLBACK_MODELS,
   hasDirectGeminiFallback,
 } from '@/lib/ai-provider';
 
-export const maxDuration = 60;
+export const maxDuration = 30;
 
-const PROMPT = 'Reply with exactly one word: OK';
+// Validates the Gemini API key by listing models — zero token cost
+async function checkGeminiKey(): Promise<{ ok: boolean; error?: string; models?: string[] }> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return { ok: false, error: 'GEMINI_API_KEY not set' };
 
-type ModelResult = {
-  model: string;
-  provider: 'openrouter' | 'direct-gemini';
-  ok: boolean;
-  error?: string;
-};
-
-async function testModel(
-  provider: ReturnType<typeof getAIProvider> | ReturnType<typeof getDirectGeminiProvider>,
-  modelId: string,
-): Promise<{ ok: boolean; error?: string }> {
   try {
-    await generateText({
-      model: provider!(modelId),
-      prompt: PROMPT,
-      maxOutputTokens: 10,
-      maxRetries: 0,
-      abortSignal: AbortSignal.timeout(8000),
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+      { signal: AbortSignal.timeout(8000) },
+    );
+    if (!res.ok) {
+      const body = await res.text();
+      return { ok: false, error: `${res.status}: ${body.slice(0, 120)}` };
+    }
+    const data = await res.json() as { models?: Array<{ name: string }> };
+    const available = (data.models ?? []).map((m) => m.name.replace('models/', ''));
+    const configured = DIRECT_GEMINI_FALLBACK_MODELS.filter((m) => available.includes(m));
+    return {
+      ok: configured.length > 0,
+      models: configured,
+      ...(configured.length === 0 ? { error: 'None of the configured models are available' } : {}),
+    };
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
+    return { ok: false, error: e.message.slice(0, 120) };
+  }
+}
+
+// Validates the OpenRouter key with a lightweight account check — zero token cost
+async function checkOpenRouterKey(): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) return { ok: false, error: 'OPENROUTER_API_KEY not set' };
+  if (FREE_MODEL_FALLBACKS.length === 0) return { ok: true, error: 'no free models configured' };
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(8000),
     });
+    if (!res.ok) {
+      return { ok: false, error: `${res.status}: invalid or expired key` };
+    }
     return { ok: true };
   } catch (err) {
     const e = err instanceof Error ? err : new Error(String(err));
-    const status = (e as Error & { statusCode?: number }).statusCode;
-    return { ok: false, error: `${status ?? 'err'}: ${e.message.slice(0, 120)}` };
+    return { ok: false, error: e.message.slice(0, 120) };
   }
 }
 
 export async function GET() {
-  const results: ModelResult[] = [];
+  const [gemini, openrouter] = await Promise.all([
+    hasDirectGeminiFallback() ? checkGeminiKey() : Promise.resolve(null),
+    checkOpenRouterKey(),
+  ]);
 
-  const openRouterProvider = getAIProvider();
-  for (const modelId of FREE_MODEL_FALLBACKS) {
-    const result = await testModel(openRouterProvider, modelId);
-    results.push({ model: modelId, provider: 'openrouter', ...result });
-  }
-
-  if (hasDirectGeminiFallback()) {
-    const geminiProvider = getDirectGeminiProvider();
-    if (geminiProvider) {
-      for (const modelId of DIRECT_GEMINI_FALLBACK_MODELS) {
-        const result = await testModel(geminiProvider, modelId);
-        results.push({ model: modelId, provider: 'direct-gemini', ...result });
-      }
-    }
-  }
-
-  const anyOk = results.some((r) => r.ok);
-  const status = anyOk ? 200 : 503;
+  const ok = gemini?.ok || openrouter.ok;
 
   return Response.json(
     {
-      status: anyOk ? 'ok' : 'degraded',
+      status: ok ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),
-      models: results,
+      gemini: gemini ?? { ok: false, error: 'not configured' },
+      openrouter,
     },
-    { status },
+    { status: ok ? 200 : 503 },
   );
 }
