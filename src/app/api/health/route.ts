@@ -7,7 +7,7 @@ import {
   hasDirectGeminiFallback,
 } from '@/lib/ai-provider';
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const PROMPT = 'Reply with exactly one word: OK';
 
@@ -28,6 +28,7 @@ async function testModel(
       prompt: PROMPT,
       maxOutputTokens: 10,
       maxRetries: 0,
+      abortSignal: AbortSignal.timeout(8000),
     });
     return { ok: true };
   } catch (err) {
